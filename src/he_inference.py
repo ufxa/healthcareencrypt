@@ -102,23 +102,24 @@ _W_COEFFS = None
 _W_LAYER_INPUT = None  # this layer's input ciphertexts, set once per layer
 
 
-def _init_worker(ctx_bytes, coeffs):
-    """Runs ONCE when each worker process starts (persists across every
-    subsequent pool.map call on that worker) -- NOT once per task."""
-    global _W_CTX, _W_COEFFS
+def _init_worker(ctx_bytes, coeffs, layer_input_bytes):
+    """Runs ONCE when each worker process starts, for a Pool created fresh
+    for THIS layer -- Pool's initializer is guaranteed to run on every
+    single worker before that worker processes any task, unlike a
+    pool.map() broadcast (which does NOT guarantee one task per worker: a
+    fast worker can steal a second broadcast task from the queue while a
+    slower one gets none, leaving it holding the PREVIOUS layer's stale
+    ciphertexts -- confirmed as the root cause of a silent, non-crashing
+    wrong-dimension bug where AUROC collapsed to ~0.48 on the real 48-256-
+    128-64-1 network despite the identical algorithm validating correctly
+    on a small 6-8-5-3-1 toy network, where the race window is small enough
+    to rarely trigger). Recreating the pool per layer costs a fork + this
+    initializer per layer instead of once for the whole engine, which is
+    the price of the correctness guarantee."""
+    global _W_CTX, _W_COEFFS, _W_LAYER_INPUT
     _W_CTX = ts.context_from(ctx_bytes)
     _W_COEFFS = coeffs
-
-
-def _set_layer_input(enc_xs_bytes):
-    """Broadcast task: sets this layer's input ciphertexts in worker-local
-    state. Called once per layer (n_workers tasks total), NOT once per
-    output neuron -- avoids re-pickling the full input ciphertext list for
-    every neuron in the layer (which for a 256-wide layer would otherwise
-    multiply IPC traffic by 256x)."""
-    global _W_LAYER_INPUT
-    _W_LAYER_INPUT = [ts.ckks_vector_from(_W_CTX, b) for b in enc_xs_bytes]
-    return True
+    _W_LAYER_INPUT = [ts.ckks_vector_from(_W_CTX, b) for b in layer_input_bytes]
 
 
 def _powers_balanced(enc_x, max_degree):
@@ -171,19 +172,16 @@ class HEInferenceEngine:
         self.ctx = build_context(params["poly_modulus_degree"], params["coeff_mod_bit_sizes"])
         self.ctx_public_bytes = self.ctx.serialize(save_secret_key=False)
         self.n_workers = n_workers
-        self.pool = Pool(n_workers, initializer=_init_worker,
-                          initargs=(self.ctx_public_bytes, self.coeffs))
 
     def close(self):
-        self.pool.close()
-        self.pool.join()
+        pass  # no persistent pool anymore -- each layer opens/closes its own
 
     def _linear_layer(self, enc_xs_bytes, W, b, apply_activation):
         out_dim = W.shape[0]
         if out_dim == 1:
-            # Single output neuron (final logit): parallel broadcast to a
-            # full worker pool just to compute ONE value would cost far more
-            # in IPC than the compute itself saves -- do it directly here.
+            # Single output neuron (final logit): spinning up a worker pool
+            # just to compute ONE value would cost far more in IPC than the
+            # compute itself saves -- do it directly here.
             enc_xs = [ts.ckks_vector_from(self.ctx, b_) for b_ in enc_xs_bytes]
             acc = enc_xs[0] * float(W[0, 0])
             for i in range(1, len(enc_xs)):
@@ -191,13 +189,15 @@ class HEInferenceEngine:
             acc = acc + float(b[0])
             return [acc.serialize()]
 
-        # Broadcast this layer's input ciphertexts to every worker ONCE
-        # (n_workers tasks, not out_dim tasks), then fan out the cheap
-        # per-neuron (weight row, bias) tasks.
-        self.pool.map(_set_layer_input, [enc_xs_bytes] * self.n_workers)
-        tasks = [(W[o].tolist(), float(b[o]), apply_activation)
-                  for o in range(out_dim)]
-        return self.pool.map(_neuron_task, tasks)
+        # Fresh pool for this layer: the initializer is GUARANTEED to run on
+        # every worker before it processes any task (unlike a pool.map()
+        # broadcast -- see _init_worker docstring for the bug this fixes).
+        n_workers = min(self.n_workers, out_dim)
+        with Pool(n_workers, initializer=_init_worker,
+                  initargs=(self.ctx_public_bytes, self.coeffs, enc_xs_bytes)) as pool:
+            tasks = [(W[o].tolist(), float(b[o]), apply_activation)
+                      for o in range(out_dim)]
+            return pool.map(_neuron_task, tasks)
 
     def forward_batch(self, X_batch, layer_weights):
         """X_batch: (B, in_dim) already normalized+clipped to [-1,1].
@@ -229,9 +229,11 @@ def run_he_eval(model_path, data_path, ckks_n, n_workers, max_test=None, out_pat
     coeffs, linf, rmse = fit_chebyshev_relu(params["degree"])
     print(f"n=2^{ckks_n}: degree={params['degree']} Linf={linf:.4f} RMSE={rmse:.4f}")
 
-    # Private context (with secret key) stays LOCAL to this process -- only
-    # the public-material serialization is handed to worker processes.
-    priv_ctx = build_context(params["poly_modulus_degree"], params["coeff_mod_bit_sizes"])
+    # The engine's context (created once, below) holds the secret key and
+    # stays LOCAL to this process for the entire run -- only its
+    # public-material serialization (self.ctx_public_bytes) is handed to
+    # worker processes. forward_batch()'s returned ciphertext is already
+    # correctly linked to this SAME context/key by construction.
     engine = HEInferenceEngine(ckks_n, n_workers, coeffs)
 
     batch_size = 512
@@ -247,7 +249,15 @@ def run_he_eval(model_path, data_path, ckks_n, n_workers, max_test=None, out_pat
 
         t0 = time.time()
         enc_out = engine.forward_batch(Xb_padded, layer_weights)
-        enc_out.link_context(priv_ctx)
+        # enc_out is already linked to engine.ctx (holds the secret key) by
+        # forward_batch's construction -- decrypt directly, no re-link. A
+        # previous version re-linked to an INDEPENDENTLY generated context
+        # here (two separate ts.context() calls with identical parameters
+        # still produce different, unrelated key pairs -- CKKS key
+        # generation is randomized), silently decrypting every result with
+        # the wrong secret key. That produced well-formed but meaningless
+        # noise -- no crash, just AUROC collapsing to ~chance -- which is
+        # why it surfaced as a wrong-answer bug rather than an exception.
         logits = np.array(enc_out.decrypt())
         elapsed_ms = (time.time() - t0) * 1000
         batch_latencies_ms.append(elapsed_ms)
