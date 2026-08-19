@@ -44,7 +44,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="results/plaintext_model_seed42.pt")
     ap.add_argument("--data", default="data/cohort.csv")
-    ap.add_argument("--ckks-n", type=int, default=14, choices=[13, 14, 15])
+    ap.add_argument("--ckks-n", type=int, default=15, choices=[14, 15])
     ap.add_argument("--workers", type=int, default=64)
     ap.add_argument("--max-test", type=int, default=None)
     ap.add_argument("--out", default="results/lee_baseline.json")

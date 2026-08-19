@@ -42,15 +42,31 @@ from src.train_plaintext import expected_calibration_error
 RELU_DOMAIN = (-5.0, 5.0)
 
 # ---------------------------------------------------------------------------
-# CKKS parameter sets. n=2^13 cannot hold the depth-16 chain this network
-# needs at any usable precision (see README_HE_FINDINGS.md); we report it in
-# the sweep anyway, with a documented reduced-depth activation (degree-3) as
-# the only configuration that fits its shallower chain, exactly like the
-# ablation the paper already reports for degree-3 activations.
+# CKKS parameter sets. This network (3 linear layers each followed by a
+# polynomial activation, plus an output linear layer) needs 13-16
+# sequential multiplicative levels without bootstrapping (SEAL/TenSEAL do
+# not implement CKKS bootstrapping): 1 level per linear layer (4 total) plus
+# ~3-4 levels per activation for the balanced power-basis evaluation of the
+# degree-3/5/7 Chebyshev polynomial (x^2..x^7 computed in <=3 sequential
+# ciphertext-ciphertext multiplications, then +1 level for the weighted sum).
+#
+# This is a real, measured constraint, not a design choice:
+#   n=2^13 (8192): INFEASIBLE at any activation degree. The 128-bit-security
+#     modulus budget for this ring dimension (~218 bits) cannot supply
+#     enough NTT-friendly primes for the required depth -- SEAL raises
+#     "failed to find enough qualifying primes" outright, before any
+#     accuracy/noise question even arises. We report this as a genuine
+#     negative result (see Sec. VI) rather than force an insecure or
+#     nonexistent parameter set into the sweep.
+#   n=2^14 (16384): feasible ONLY with the reduced degree-3 activation
+#     (13 usable levels at 344 of the ~438-bit budget); degree-5/7 exceed
+#     its depth budget and fail with "scale out of bounds".
+#   n=2^15 (32768): feasible at the full degree-7 design (16 levels, 760 of
+#     the ~881-bit budget) -- this is the parameter set the paper's headline
+#     HE-MedInfer numbers use.
 # ---------------------------------------------------------------------------
 PARAM_SETS = {
-    13: dict(poly_modulus_degree=8192, coeff_mod_bit_sizes=[40, 20, 20, 20, 40], degree=3),
-    14: dict(poly_modulus_degree=16384, coeff_mod_bit_sizes=[60] + [30] * 9 + [60], degree=7),
+    14: dict(poly_modulus_degree=16384, coeff_mod_bit_sizes=[40] + [24] * 11 + [40], degree=3),
     15: dict(poly_modulus_degree=32768, coeff_mod_bit_sizes=[60] + [40] * 16 + [60], degree=7),
 }
 
@@ -275,7 +291,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="results/plaintext_model_seed42.pt")
     ap.add_argument("--data", default="data/cohort.csv")
-    ap.add_argument("--ckks-n", type=int, default=14, choices=[13, 14, 15])
+    ap.add_argument("--ckks-n", type=int, default=15, choices=[14, 15])
     ap.add_argument("--workers", type=int, default=64)
     ap.add_argument("--max-test", type=int, default=None)
     ap.add_argument("--out", default="results/he_medinfer.json")

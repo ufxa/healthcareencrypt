@@ -1,0 +1,20 @@
+{
+  "rows": [
+    {
+      "method": "DP-SGD (non-HE)",
+      "auroc": 0.8379822148680635,
+      "accuracy": 0.8875354777672658,
+      "latency_ms": 0.07220857416331598,
+      "lambda_bits": 0.0,
+      "hepi": 0.5890986750601488
+    },
+    {
+      "method": "Plaintext MLP (upper bound)",
+      "auroc": 0.861459849215394,
+      "accuracy": 0.8906102175969725,
+      "latency_ms": 0.07220857416331598,
+      "lambda_bits": null,
+      "hepi": null
+    }
+  ]
+}
