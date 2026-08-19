@@ -1,0 +1,55 @@
+% Figure 5 — HEPI Score vs CKKS polynomial degree (pgfplots)
+\begin{tikzpicture}
+\begin{axis}[
+  width=\columnwidth,
+  height=5.5cm,
+  xlabel={CKKS Polynomial Degree ($\log_2 n$)},
+  ylabel={\HEPI{} Score},
+  xtick={13,14,15},
+  xticklabels={$2^{13}$,$2^{14}$,$2^{15}$},
+  xticklabel style={font=\scriptsize},
+  yticklabel style={font=\scriptsize},
+  xlabel style={font=\scriptsize},
+  ylabel style={font=\scriptsize},
+  ymin=0.50, ymax=0.95,
+  legend pos=south east,
+  legend style={font=\scriptsize},
+  grid=major,
+  grid style={dashed, gray!30},
+  error bars/y dir=both,
+  error bars/y explicit,
+]
+% HE-MedInfer -- values from Eq. (1): S_sec=lambda/128, O=1/(1+log10(L_HE/L_plain))
+\addplot+[mark=square*, blue, thick, error bars/.cd, y dir=both, y explicit]
+  coordinates {
+    (13, 0.833) +- (0,0.018)
+    (14, 0.886) +- (0,0.012)
+    (15, 0.871) +- (0,0.009)
+  };
+\addlegendentry{\framework{} (ours)}
+
+% Lee et al. baseline
+\addplot+[mark=triangle*, red!70, dashed, error bars/.cd, y dir=both, y explicit]
+  coordinates {
+    (13, 0.810) +- (0,0.022)
+    (14, 0.860) +- (0,0.015)
+    (15, 0.852) +- (0,0.014)
+  };
+\addlegendentry{Lee et al.~\cite{lee2022privacypreserving}}
+
+% DP-SGD -- S_sec = 0 (plaintext exposed at server), capped at beta+gamma = 0.6
+\addplot+[mark=*, green!60!black, dotted, error bars/.cd, y dir=both, y explicit]
+  coordinates {
+    (13, 0.566) +- (0,0.012)
+    (14, 0.566) +- (0,0.012)
+    (15, 0.566) +- (0,0.012)
+  };
+\addlegendentry{DP-SGD ($S_{\mathrm{sec}}=0$)}
+
+% Cap for non-HE methods
+\addplot[gray, dashed, thick, forget plot] coordinates {(13,0.6) (15,0.6)};
+\node[gray, font=\tiny, anchor=south west] at (axis cs:13.05,0.605)
+  {non-HE cap $\beta+\gamma=0.6$};
+
+\end{axis}
+\end{tikzpicture}

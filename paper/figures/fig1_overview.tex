@@ -1,0 +1,60 @@
+% Figure 1 — HE-MedInfer Architecture Overview
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=3pt, minimum width=2.2cm, minimum height=0.8cm,
+              align=center, font=\small},
+  tier/.style={draw, dashed, rounded corners=5pt, inner sep=8pt},
+  arr/.style={-{Stealth[length=5pt]}, thick},
+  earr/.style={-{Stealth[length=5pt]}, thick, green!60!black, dashed},
+  aarr/.style={-{Stealth[length=5pt]}, thick, orange!80!black, dash dot},
+]
+
+% --- Data Owner Tier ---
+\node[box, fill=blue!10]  (do)    at (0, 0)    {Data Owner\\(Hospital)};
+\node[box, fill=blue!15]  (ea)    at (0,-1.6)  {Encryption\\Agent (EA)};
+\node[box, fill=gray!10]  (feat)  at (0,-3.0)  {Feature\\Normalization};
+
+% --- Inference Server Tier ---
+\node[box, fill=green!10] (is)    at (4.5, 0)  {Inference\\Server};
+\node[box, fill=green!15] (ia)    at (4.5,-1.6){Inference\\Agent (IA)};
+\node[box, fill=gray!10]  (poly)  at (4.5,-3.0){Polynomial\\Activation};
+
+% --- Audit Tier ---
+\node[box, fill=orange!10](ka)    at (9.0, 0)  {Key Authority\\(KA)};
+\node[box, fill=orange!15](aa)    at (9.0,-1.6){Audit\\Agent (AA)};
+\node[box, fill=gray!10]  (log)   at (9.0,-3.0){Append-Only\\Audit Log};
+
+% --- Tier labels ---
+\begin{scope}[on background layer]
+  \node[tier, fit=(do)(ea)(feat), label=above:{\small \textbf{Encryption Tier (Data Owner)}}] {};
+  \node[tier, fit=(is)(ia)(poly), fill=green!3,
+        label=above:{\small \textbf{Inference Tier (Cloud)}}] {};
+  \node[tier, fit=(ka)(aa)(log),  fill=orange!3,
+        label=above:{\small \textbf{Audit Tier (KA)}}] {};
+\end{scope}
+
+% --- Internal flows ---
+\draw[arr] (do)   -- (ea);
+\draw[arr] (ea)   -- (feat);
+\draw[arr] (is)   -- (ia);
+\draw[arr] (ia)   -- (poly);
+\draw[arr] (ka)   -- (aa);
+\draw[arr] (aa)   -- (log);
+
+% --- Cross-tier encrypted flows ---
+\draw[earr] (ea)  -- node[above, font=\scriptsize]{ct(x)} (ia);
+\draw[earr] (ia)  -- node[above, font=\scriptsize]{ct(y)} (ea);
+
+% --- Audit flows ---
+\draw[aarr] (ea)  -- node[above, font=\scriptsize, sloped]{com} (aa);
+\draw[aarr] (ia)  -- node[above, font=\scriptsize, sloped]{ct(y)} (aa);
+\draw[arr]  (ka)  -- node[above, font=\scriptsize, sloped]{pk, evk} (ia);
+
+% --- Legend ---
+\matrix[draw, inner sep=4pt, below=0.4cm of feat, xshift=4.5cm,
+        font=\scriptsize, row sep=2pt] {
+  \draw[arr]  (0,0) -- (0.5,0); & \node{Standard TLS flow}; \\
+  \draw[earr] (0,0) -- (0.5,0); & \node{CKKS encrypted payload}; \\
+  \draw[aarr] (0,0) -- (0.5,0); & \node{Commitment / audit record}; \\
+};
+
+\end{tikzpicture}

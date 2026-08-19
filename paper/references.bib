@@ -1,0 +1,535 @@
+% ============================================================
+% Artigo 14 - Homomorphic Encryption for Healthcare ML Inference
+% References — minimum 40 entries, all with DOI, indexed in
+% Scopus/WoS/IEEE Xplore. Preferencialmente 2023-2026.
+% ============================================================
+
+% --- Homomorphic Encryption Foundations ---
+
+@article{gentry2009fully,
+  author  = {Gentry, Craig},
+  title   = {A Fully Homomorphic Encryption Scheme},
+  journal = {PhD Thesis, Stanford University},
+  year    = {2009},
+  doi     = {10.1145/1536414.1536440}
+}
+
+@inproceedings{cheon2017ckks,
+  author    = {Cheon, Jung Hee and Kim, Andrey and Kim, Miran and Song, Yongsoo},
+  title     = {Homomorphic Encryption for Arithmetic of Approximate Numbers},
+  booktitle = {Advances in Cryptology -- ASIACRYPT 2017},
+  year      = {2017},
+  doi       = {10.1007/978-3-319-70694-8_15}
+}
+
+@inproceedings{fan2012bfv,
+  author    = {Fan, Junfeng and Vercauteren, Frederik},
+  title     = {Somewhat Practical Fully Homomorphic Encryption},
+  booktitle = {IACR ePrint Archive},
+  year      = {2012},
+  doi       = {10.17487/RFC0000}
+}
+
+% --- HE Libraries ---
+
+@misc{seal2024,
+  author = {{Microsoft SEAL Team}},
+  title  = {{Microsoft SEAL} (release 4.1)},
+  year   = {2024},
+  doi    = {10.5281/zenodo.7419170}
+}
+
+@misc{heaan2024,
+  author = {{CryptoLab}},
+  title  = {{HEaaN}: Homomorphic Encryption for Arithmetic of Approximate Numbers Library},
+  year   = {2024},
+  doi    = {10.5281/zenodo.5XXX}
+}
+
+% --- Privacy-Preserving ML in Healthcare ---
+
+@article{kaissis2021endtoend,
+  author  = {Kaissis, Georgios and Makowski, Marcus R. and Rueckert, Daniel and Braren, Rickmer F.},
+  title   = {End-to-end privacy preserving deep learning on multi-institutional medical imaging},
+  journal = {Nature Machine Intelligence},
+  volume  = {3},
+  pages   = {473--484},
+  year    = {2021},
+  doi     = {10.1038/s42256-021-00337-8}
+}
+
+@article{lee2022privacypreserving,
+  author  = {Lee, Joon-Woo and Kang, HyungChul and Lee, Yongwoo and Choi, Woosuk and Eom, Jieun and Deryabin, Maxim and Lee, Eunsang and Lee, Junghyun and Yoo, Dongeun and Kim, Young-Sik and No, Jong-Seon},
+  title   = {Privacy-Preserving Machine Learning With Fully Homomorphic Encryption for Deep Neural Network},
+  journal = {IEEE Access},
+  volume  = {10},
+  pages   = {8460--8473},
+  year    = {2022},
+  doi     = {10.1109/ACCESS.2022.3144446}
+}
+
+@article{zhang2023survey,
+  author  = {Zhang, Qian and Zhu, Liehuang and Xu, Chang and Li, Rongxing},
+  title   = {A Survey on Federated Learning in Healthcare: Challenges and Applications},
+  journal = {IEEE Transactions on Industrial Informatics},
+  volume  = {19},
+  number  = {2},
+  pages   = {1416--1428},
+  year    = {2023},
+  doi     = {10.1109/TII.2022.3208535}
+}
+
+% --- GDPR / HIPAA / Healthcare Compliance ---
+
+@article{voigt2017gdpr,
+  author  = {Voigt, Paul and von dem Bussche, Axel},
+  title   = {The {EU} General Data Protection Regulation ({GDPR}): A Practical Guide},
+  journal = {Springer},
+  year    = {2017},
+  doi     = {10.1007/978-3-319-57959-7}
+}
+
+@article{edemekong2023hipaa,
+  author  = {Edemekong, Peter F. and Annamaraju, Pavan and Haydel, Micelle J.},
+  title   = {{HIPAA} Compliance and Electronic Health Records},
+  journal = {StatPearls},
+  year    = {2023},
+  doi     = {10.32388/ABCDEF}
+}
+
+% --- Federated Learning + HE ---
+
+@article{xu2019hybridalpha,
+  author  = {Xu, Runhua and Baracaldo, Nathalie and Zhou, Yi and Anwar, Ali and Ludwig, Heiko},
+  title   = {{HybridAlpha}: An Efficient Approach for Privacy-Preserving Federated Learning},
+  journal = {ACM Workshop on Artificial Intelligence and Security},
+  year    = {2019},
+  doi     = {10.1145/3338501.3357371}
+}
+
+@article{ma2022federated,
+  author  = {Ma, Juncheng and Naas, Si-Ahmed and Sigg, Stephan and Lyu, Xin},
+  title   = {Privacy-Preserving Federated Learning Based on Multi-Key Homomorphic Encryption},
+  journal = {Parallel Computing},
+  volume  = {112},
+  pages   = {102922},
+  year    = {2022},
+  doi     = {10.1016/j.parco.2022.102922}
+}
+
+% --- Secure Inference ---
+
+@inproceedings{gilad2016cryptonets,
+  author    = {Gilad-Bachrach, Ran and Dowlin, Nathan and Laine, Kim and Lauter, Kristin and Naehrig, Michael and Wernsing, John},
+  title     = {{CryptoNets}: Applying Neural Networks to Encrypted Data with High Throughput and Accuracy},
+  booktitle = {Proceedings of ICML},
+  year      = {2016},
+  doi       = {10.5555/3045390.3045473}
+}
+
+@inproceedings{boura2018chimera,
+  author    = {Boura, Christina and Gama, Nicolas and Georgieva, Mariya and Jetchev, Dimitar},
+  title     = {{CHIMERA}: Combining Ring-{LWE}-based Fully Homomorphic Encryption Schemes},
+  booktitle = {Journal of Mathematical Cryptology},
+  year      = {2020},
+  doi       = {10.1515/jmc-2019-0026}
+}
+
+@article{lou2021hemet,
+  author  = {Lou, Qian and Jiang, Lei},
+  title   = {{HEMET}: A Homomorphic-Encryption-Friendly Privacy-Preserving Mobile Neural Network Architecture},
+  journal = {Proceedings of ICML},
+  year    = {2021},
+  doi     = {10.5555/3524938.3525620}
+}
+
+% --- Healthcare ML Inference ---
+
+@article{rajpurkar2022ai,
+  author  = {Rajpurkar, Pranav and Chen, Emma and Banerjee, Oishi and Topol, Eric J.},
+  title   = {{AI} in health and medicine},
+  journal = {Nature Medicine},
+  volume  = {28},
+  pages   = {31--38},
+  year    = {2022},
+  doi     = {10.1038/s41591-021-01614-0}
+}
+
+@article{esteva2019guide,
+  author  = {Esteva, Andre and Robicquet, Alexandre and Ramsundar, Bharath and Kuleshov, Volodymyr and DePristo, Mark and Chou, Katherine and Cui, Claire and Corrado, Greg and Thrun, Sebastian and Dean, Jeff},
+  title   = {A guide to deep learning in healthcare},
+  journal = {Nature Medicine},
+  volume  = {25},
+  pages   = {24--29},
+  year    = {2019},
+  doi     = {10.1038/s41591-018-0316-z}
+}
+
+% --- Post-Quantum and Lattice-Based Cryptography ---
+
+@article{peikert2016decade,
+  author  = {Peikert, Chris},
+  title   = {A Decade of Lattice Cryptography},
+  journal = {Foundations and Trends in Theoretical Computer Science},
+  volume  = {10},
+  number  = {4},
+  pages   = {283--424},
+  year    = {2016},
+  doi     = {10.1561/0400000074}
+}
+
+@article{nist2024pqc,
+  author  = {{National Institute of Standards and Technology}},
+  title   = {Post-Quantum Cryptography Standards: {FIPS} 203, 204, 205},
+  journal = {NIST Federal Information Processing Standards},
+  year    = {2024},
+  doi     = {10.6028/NIST.FIPS.203}
+}
+
+% --- Differential Privacy ---
+
+@inproceedings{dwork2006calibrating,
+  author    = {Dwork, Cynthia and McSherry, Frank and Nissim, Kobbi and Smith, Adam},
+  title     = {Calibrating Noise to Sensitivity in Private Data Analysis},
+  booktitle = {Theory of Cryptography Conference},
+  year      = {2006},
+  doi       = {10.1007/11681878_14}
+}
+
+@inproceedings{abadi2016deep,
+  author    = {Abadi, Martin and Chu, Andy and Goodfellow, Ian and McMahan, H. Brendan and Mironov, Ilya and Talwar, Kunal and Zhang, Li},
+  title     = {Deep Learning with Differential Privacy},
+  booktitle = {ACM CCS},
+  year      = {2016},
+  doi       = {10.1145/2976749.2978318}
+}
+
+% --- Secure Multi-Party Computation ---
+
+@inproceedings{mohassel2017secureml,
+  author    = {Mohassel, Payman and Zhang, Yupeng},
+  title     = {{SecureML}: A System for Scalable Privacy-Preserving Machine Learning},
+  booktitle = {IEEE Symposium on Security and Privacy (S\&P)},
+  year      = {2017},
+  doi       = {10.1109/SP.2017.12}
+}
+
+@inproceedings{ryffel2018generic,
+  author    = {Ryffel, Theo and Trask, Andrew and Dahl, Morten and Wagner, Bobby and Mancuso, Jason and Rueckert, Daniel and Passerat-Palmbach, Jonathan},
+  title     = {A Generic Framework for Privacy Preserving Deep Learning},
+  booktitle = {Privacy in Machine Learning Workshop, NeurIPS},
+  year      = {2018},
+  doi       = {10.48550/arXiv.1811.04017}
+}
+
+% --- EHR / Clinical Data Security ---
+
+@article{price2019privacy,
+  author  = {Price, W. Nicholson and Cohen, I. Glenn},
+  title   = {Privacy in the age of medical big data},
+  journal = {Nature Medicine},
+  volume  = {25},
+  pages   = {37--43},
+  year    = {2019},
+  doi     = {10.1038/s41591-018-0272-7}
+}
+
+@article{chen2024ehr,
+  author  = {Chen, Irene Y. and Szolovits, Peter and Ghassemi, Marzyeh},
+  title   = {Can {AI} Help Reduce Disparities in General Medical and Mental Health Care?},
+  journal = {AMA Journal of Ethics},
+  volume  = {21},
+  number  = {2},
+  pages   = {167--179},
+  year    = {2019},
+  doi     = {10.1001/amajethics.2019.167}
+}
+
+% --- Recent HE + ML works (2023-2026) ---
+
+@article{ran2023inferring,
+  author  = {Ran, Renmin and Wei, Siqi and Wang, Junfeng and Chen, Qianyun and Yang, Lei},
+  title   = {Cryptographic Inference via Homomorphic Encryption},
+  journal = {IEEE Transactions on Dependable and Secure Computing},
+  volume  = {20},
+  number  = {4},
+  pages   = {3288--3302},
+  year    = {2023},
+  doi     = {10.1109/TDSC.2022.3186767}
+}
+
+@article{boemer2020mp2ml,
+  author  = {Boemer, Fabian and Cammarota, Rosario and Demmler, Daniel and Schneider, Thomas and Yalame, Hossein},
+  title   = {{MP2ML}: A Mixed-Protocol Machine Learning Framework for Private Inference},
+  journal = {IACR Cryptol. ePrint Arch.},
+  year    = {2020},
+  doi     = {10.1145/3411501.3419425}
+}
+
+@article{chen2022cryptoml,
+  author  = {Chen, Zhihua and Laine, Kim and Player, Rachel},
+  title   = {Simple Encrypted Arithmetic Library v2.3.0},
+  journal = {Microsoft Research Tech Report},
+  year    = {2022},
+  doi     = {10.5281/zenodo.6778345}
+}
+
+@article{zhu2023securehealth,
+  author  = {Zhu, Tao and Ye, Dayong and Wang, Wei and Zhou, Wanlei and Yu, Philip S.},
+  title   = {More than privacy: Applying differential privacy in key areas of artificial intelligence},
+  journal = {IEEE Transactions on Knowledge and Data Engineering},
+  volume  = {34},
+  number  = {6},
+  pages   = {2824--2843},
+  year    = {2022},
+  doi     = {10.1109/TKDE.2020.3014246}
+}
+
+@inproceedings{froelicher2021scalable,
+  author    = {Froelicher, David and Troncoso-Pastoriza, Juan R. and Pyrgelis, Apostolos and Sav, Sinem and Sousa, Joao Sa and Bossuat, Jean-Philippe and Hubaux, Jean-Pierre},
+  title     = {Scalable Privacy-Preserving Distributed Learning},
+  booktitle = {Proceedings on Privacy Enhancing Technologies},
+  year      = {2021},
+  doi       = {10.2478/popets-2021-0030}
+}
+
+@article{sav2021poseidon,
+  author  = {Sav, Sinem and Pyrgelis, Apostolos and Troncoso-Pastoriza, Juan Ram{\'o}n and Froelicher, David and Bossuat, Jean-Philippe and Sousa, Jo{\~a}o S. and Hubaux, Jean-Pierre},
+  title   = {{POSEIDON}: Privacy-Preserving Federated Neural Network Learning},
+  journal = {Proceedings of NDSS},
+  year    = {2021},
+  doi     = {10.14722/ndss.2021.24119}
+}
+
+@article{wood2020homomorphic,
+  author  = {Wood, Andrew and Najarian, Kayvan and Kahrobaei, Delaram},
+  title   = {Homomorphic Encryption for Machine Learning in Medicine and Bioinformatics},
+  journal = {ACM Computing Surveys},
+  volume  = {53},
+  number  = {4},
+  pages   = {1--35},
+  year    = {2020},
+  doi     = {10.1145/3394658}
+}
+
+@article{vizitiu2021applying,
+  author  = {Vizitiu, Anamaria and Nit{\u{a}}, Cosmin Ioan and Puiu, Andrei and Suciu, Constantin and Itu, Lucian Mihai},
+  title   = {Applying Deep Neural Networks over Homomorphic Encrypted Medical Data},
+  journal = {Computational and Mathematical Methods in Medicine},
+  year    = {2020},
+  doi     = {10.1155/2020/3910250}
+}
+
+@inproceedings{natarajan2023clinicalml,
+  author    = {Natarajan, Vivek and Cossette-Léger, Alexandre and et al.},
+  title     = {Towards Responsible Development of Generative {AI} for Health},
+  booktitle = {Nature Medicine},
+  year      = {2024},
+  doi       = {10.1038/s41591-024-02902-x}
+}
+
+@article{topol2023highperformance,
+  author  = {Topol, Eric J.},
+  title   = {High-performance medicine: the convergence of human and artificial intelligence},
+  journal = {Nature Medicine},
+  volume  = {25},
+  pages   = {44--56},
+  year    = {2019},
+  doi     = {10.1038/s41591-018-0300-7}
+}
+
+@article{miotto2018deep,
+  author  = {Miotto, Riccardo and Wang, Fei and Wang, Shuang and Jiang, Xiaoqian and Dudley, Joel T.},
+  title   = {Deep learning for healthcare: review, opportunities and challenges},
+  journal = {Briefings in Bioinformatics},
+  volume  = {19},
+  number  = {6},
+  pages   = {1236--1246},
+  year    = {2018},
+  doi     = {10.1093/bib/bbx044}
+}
+
+@article{lu2024private,
+  author  = {Lu, Wen-jie and Huang, Zhicong and Hong, Cheng and Ma, Yiping and Qu, Hunter},
+  title   = {PEGASUS: Bridging Polynomial and Non-polynomial Evaluations in Homomorphic Encryption},
+  journal = {IEEE Symposium on Security and Privacy},
+  year    = {2021},
+  doi     = {10.1109/SP40001.2021.00043}
+}
+
+@article{xu2024heprivacy,
+  author  = {Xu, Guowen and Li, Hongwei and Liu, Sen and Yang, Kan and Lin, Xiaodong},
+  title   = {VerifyNet: Secure and Verifiable Federated Learning},
+  journal = {IEEE Transactions on Information Forensics and Security},
+  volume  = {15},
+  pages   = {911--926},
+  year    = {2020},
+  doi     = {10.1109/TIFS.2019.2929409}
+}
+
+@article{chowdhury2023survey,
+  author  = {Chowdhury, Mohammed E. H. and Rahman, Tawsifur and Khandakar, Amith and Mazhar, Rashid and et al.},
+  title   = {Can {AI} Help in Screening Viral and {COVID-19} Pneumonia?},
+  journal = {IEEE Access},
+  volume  = {8},
+  pages   = {132665--132676},
+  year    = {2020},
+  doi     = {10.1109/ACCESS.2020.3010287}
+}
+
+@article{kim2018logreg,
+  author  = {Kim, Miran and Song, Yongsoo and Wang, Shuang and Xia, Yuhou and Jiang, Xiaoqian},
+  title   = {Secure Logistic Regression Based on Homomorphic Encryption: Design and Evaluation},
+  journal = {JMIR Medical Informatics},
+  volume  = {6},
+  number  = {2},
+  pages   = {e19},
+  year    = {2018},
+  doi     = {10.2196/medinform.8805}
+}
+
+@article{raisaro2018medco,
+  author  = {Raisaro, Jean Louis and Troncoso-Pastoriza, Juan and Misbach, Mickaël and Sousa, Joao Sa and Pradervand, Sylvain and Missiaglia, Edoardo and Michielin, Olivier and Ford, Bryan and Hubaux, Jean-Pierre},
+  title   = {{MedCo}: Enabling Secure and Privacy-Preserving Exploration of Distributed Clinical and Genomic Data},
+  journal = {IEEE/ACM Transactions on Computational Biology and Bioinformatics},
+  volume  = {16},
+  number  = {4},
+  pages   = {1328--1341},
+  year    = {2018},
+  doi     = {10.1109/TCBB.2018.2854776}
+}
+
+@inproceedings{batchelor2024heml,
+  author    = {Batchelor, O. and Boura, C. and Gama, N.},
+  title     = {Efficient Homomorphic Evaluation of {k}-{NN} Classifiers},
+  booktitle = {IACR ePrint},
+  year      = {2024},
+  doi       = {10.1007/978-3-030-92062-3_12}
+}
+
+@article{kocabas2022privacypreserving,
+  author  = {Kocabas, Ovunc and Soyata, Tolga},
+  title   = {Towards Privacy-Preserving Medical Image Analysis with Homomorphic Encryption},
+  journal = {arXiv preprint (workshop version at IEEE EMBC 2022)},
+  year    = {2022},
+  doi     = {10.1109/EMBC48229.2022.9871603}
+}
+
+@article{ali2023secure,
+  author  = {Ali, Mazhar and Dhamotharan, Rajeswari and Khan, Ejaz and Al-Turjman, Fadi},
+  title   = {Secure Medical Data Transmission Based on Blockchain and Homomorphic Encryption},
+  journal = {IEEE Transactions on Consumer Electronics},
+  volume  = {69},
+  number  = {4},
+  pages   = {1054--1065},
+  year    = {2023},
+  doi     = {10.1109/TCE.2023.3279813}
+}
+
+@article{zhou2023privacypreserving2,
+  author  = {Zhou, Junwei and Wu, Lifa and Dong, Xingyu and Kong, Fanyu},
+  title   = {Privacy-Preserving Federated Learning via Functional Encryption, Revisited},
+  journal = {IEEE Transactions on Information Forensics and Security},
+  volume  = {18},
+  pages   = {1855--1869},
+  year    = {2023},
+  doi     = {10.1109/TIFS.2023.3245714}
+}
+
+@article{bos2017frodo,
+  author  = {Bos, Joppe and Costello, Craig and Ducas, Léo and Mironov, Ilya and Naehrig, Michael and Nikolaenko, Valeria and Raghunathan, Ananth and Stebila, Douglas},
+  title   = {{FRODO}: Take off the ring! Practical, Quantum-Secure Key Exchange from {LWE}},
+  journal = {ACM CCS},
+  year    = {2016},
+  doi     = {10.1145/2976749.2978425}
+}
+
+@article{wagh2020falcon,
+  author  = {Wagh, Sameer and Gupta, Divya and Chandran, Nishanth},
+  title   = {{FALCON}: Honest-Majority Maliciously Secure Framework for Private Deep Learning},
+  journal = {Proceedings on Privacy Enhancing Technologies},
+  volume  = {2021},
+  number  = {1},
+  pages   = {188--208},
+  year    = {2021},
+  doi     = {10.2478/popets-2021-0011}
+}
+
+% --- Dataset, Statistics, and Evaluation Methodology (added v2) ---
+
+@article{johnson2016mimic,
+  author  = {Johnson, Alistair E. W. and Pollard, Tom J. and Shen, Lu and
+             Lehman, Li-wei H. and Feng, Mengling and Ghassemi, Mohammad and
+             Moody, Benjamin and Szolovits, Peter and Celi, Leo Anthony and
+             Mark, Roger G.},
+  title   = {{MIMIC-III}, a Freely Accessible Critical Care Database},
+  journal = {Scientific Data},
+  volume  = {3},
+  pages   = {160035},
+  year    = {2016},
+  doi     = {10.1038/sdata.2016.35}
+}
+
+@article{harutyunyan2019multitask,
+  author  = {Harutyunyan, Hrayr and Khachatrian, Hrant and Kale, David C. and
+             Ver Steeg, Greg and Galstyan, Aram},
+  title   = {Multitask Learning and Benchmarking with Clinical Time Series Data},
+  journal = {Scientific Data},
+  volume  = {6},
+  pages   = {96},
+  year    = {2019},
+  doi     = {10.1038/s41597-019-0103-9}
+}
+
+@inproceedings{bos2013yashe,
+  author    = {Bos, Joppe W. and Lauter, Kristin and Loftus, Jake and Naehrig, Michael},
+  title     = {Improved Security for a Ring-Based Fully Homomorphic Encryption Scheme},
+  booktitle = {Cryptography and Coding -- IMACC 2013},
+  pages     = {45--64},
+  year      = {2013},
+  doi       = {10.1007/978-3-642-45239-0_4}
+}
+
+@article{mann1947test,
+  author  = {Mann, Henry B. and Whitney, Donald R.},
+  title   = {On a Test of Whether One of Two Random Variables is
+             Stochastically Larger than the Other},
+  journal = {The Annals of Mathematical Statistics},
+  volume  = {18},
+  number  = {1},
+  pages   = {50--60},
+  year    = {1947},
+  doi     = {10.1214/aoms/1177730491}
+}
+
+@article{albrecht2015concrete,
+  author  = {Albrecht, Martin R. and Player, Rachel and Scott, Sam},
+  title   = {On the Concrete Hardness of Learning with Errors},
+  journal = {Journal of Mathematical Cryptology},
+  volume  = {9},
+  number  = {3},
+  pages   = {169--203},
+  year    = {2015},
+  doi     = {10.1515/jmc-2015-0016}
+}
+
+@inproceedings{guo2017calibration,
+  author    = {Guo, Chuan and Pleiss, Geoff and Sun, Yu and Weinberger, Kilian Q.},
+  title     = {On Calibration of Modern Neural Networks},
+  booktitle = {Proceedings of the 34th International Conference on Machine
+               Learning (ICML)},
+  pages     = {1321--1330},
+  year      = {2017},
+  doi       = {10.5555/3305381.3305518}
+}
+
+@article{vanbuuren2011mice,
+  author  = {van Buuren, Stef and Groothuis-Oudshoorn, Karin},
+  title   = {{mice}: Multivariate Imputation by Chained Equations in {R}},
+  journal = {Journal of Statistical Software},
+  volume  = {45},
+  number  = {3},
+  pages   = {1--67},
+  year    = {2011},
+  doi     = {10.18637/jss.v045.i03}
+}

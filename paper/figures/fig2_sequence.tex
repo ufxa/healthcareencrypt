@@ -1,0 +1,95 @@
+% Figure 2 --- HE-MedInfer three-phase protocol (high-level phase-band flow)
+% Modeled on Artigo 11 - GuardMark Fig. 2 style (phase bands + spine + tabs)
+% Natural size: ~8.7cm x 9.8cm; include WITHOUT resizebox.
+
+\begin{tikzpicture}[
+  x=1cm,y=1cm,
+  font=\footnotesize,
+  >={Stealth[length=2.3mm,width=1.9mm]},
+  box/.style={draw, rounded corners=2.5pt, align=center, inner xsep=4pt, inner ysep=3pt, line width=0.6pt},
+  actor/.style={box, fill=gray!12, draw=black!60, minimum width=19mm},
+  layerbox/.style={box, minimum width=47.5mm, minimum height=5.6mm, inner ysep=2pt},
+  scorebox/.style={box, minimum width=16mm, minimum height=7mm, inner ysep=2.5pt},
+  tab/.style={fill=black!80, text=white, rounded corners=2pt, inner xsep=6pt, inner ysep=2.6pt, font=\small\bfseries, anchor=west},
+  pill/.style={fill=white, draw=black!70, rounded corners=2pt, inner xsep=4.5pt, inner ysep=2pt, line width=0.7pt},
+  flow/.style={->, line width=0.7pt, draw=black!75, rounded corners=3pt},
+  spine/.style={-{Stealth[length=2.9mm,width=2.3mm]}, line width=1.3pt, draw=black!75},
+  note/.style={font=\scriptsize, text=black!55, inner sep=1pt},
+  band/.style={draw=black!35, fill=gray!4, rounded corners=5pt, line width=0.8pt},
+]
+
+%% =============== Phase 1 : Encrypted Submission ===============
+\node[note, font=\scriptsize\bfseries, text=black!60] (englab) at (5.375,-0.62) {Encryption Agent (EA)};
+\node[layerbox, fill=blue!10, draw=blue!55!black] (norm) at (5.375,-1.12)
+  {\textbf{Normalize}\hspace{5pt}$x \mapsto [-1,1]$\hspace{5pt}{\scriptsize\color{black!50}feature}};
+\node[layerbox, fill=teal!12, draw=teal!55!black] (pack) at (5.375,-1.88)
+  {\textbf{SIMD Pack}\hspace{5pt}slot batching\hspace{5pt}{\scriptsize\color{black!50}512 rec/ct}};
+\node[layerbox, fill=brown!22, draw=brown!55!black] (enc) at (5.375,-2.64)
+  {\textbf{CKKS Encrypt}\hspace{5pt}$\mathbf{ct}=\Enc_{pk}(x)$\hspace{5pt}{\scriptsize\color{black!50}ciphertext}};
+\node[actor] (owner) at (1.15,-1.88)
+  {\textbf{Data Owner}\\[-1.5pt]{\scriptsize $pk,\;sk,\;evk$}};
+
+%% =============== Phase 2 : Homomorphic Inference ===============
+\node[box, fill=red!7, draw=red!45!black, minimum width=55.5mm, inner ysep=2.5pt] (infer) at (5.375,-4.73)
+  {\textbf{Inference Agent} $\mathrm{IA}(\mathbf{ct})$ on ciphertext\\[-1pt]
+   {\scriptsize linear layers $\cdot$ Chebyshev-7 activation $\cdot$ no decryption}};
+\node[actor] (server) at (1.15,-4.73) {\textbf{Inference}\\\textbf{Server}};
+
+%% =============== Phase 3 : Audit Verification ===============
+\node[scorebox, fill=blue!10, draw=blue!55!black] (ssec) at (3.575,-7.00)
+  {$S_{\text{sec}}$\\[-2pt]{\scriptsize noise budget}};
+\node[scorebox, fill=teal!12, draw=teal!55!black] (lat) at (5.375,-7.00)
+  {$L_{\text{HE}}$\\[-2pt]{\scriptsize latency ratio}};
+\node[scorebox, fill=brown!22, draw=brown!55!black] (acc) at (7.175,-7.00)
+  {$A_{\text{HE}}$\\[-2pt]{\scriptsize accuracy gap}};
+\node[actor] (verif) at (1.15,-7.00)
+  {\textbf{Audit}\\\textbf{Agent}\\[-1.5pt]{\scriptsize holds $sk$}};
+\node[box, fill=gray!14, draw=black!60, minimum width=43.5mm, inner ysep=3pt] (agg) at (5.375,-7.96)
+  {\textbf{Aggregate}\hspace{6pt}scores $\rightarrow$ $\HEPI$};
+\node[box, fill=gray!25, draw=black!60, minimum width=18.5mm] (conf) at (4.275,-8.89)
+  {Confirmed\hspace{2pt}$\checkmark$};
+\node[box, fill=white, draw=black!60, minimum width=18.5mm] (rej) at (6.475,-8.89)
+  {Rejected\hspace{2pt}$\times$};
+
+%% =============== phase bands + engine frame (background) ===============
+\begin{scope}[on background layer]
+\draw[band] (0,0) rectangle (8.4,-3.38);
+\draw[band, draw=black!45, fill=red!3, dash pattern=on 4pt off 2.5pt] (0,-3.98) rectangle (8.4,-5.44);
+\draw[band] (0,-6.04) rectangle (8.4,-9.29);
+\node[draw=black!45, fill=white, rounded corners=3.5pt, line width=0.6pt, inner sep=4pt,
+      fit=(englab)(norm)(pack)(enc)] (frame) {};
+\end{scope}
+
+%% =============== arrows ===============
+\draw[flow] (owner) -- (frame.west |- owner);
+\draw[flow] (norm) -- (pack);
+\draw[flow] (pack) -- (enc);
+\draw[spine] (enc.south) -- (infer.north);
+\draw[flow] (server) -- (infer);
+\draw[spine] (infer.south) -- (lat.north);
+\coordinate (junc) at (5.375,-6.45);
+\draw[flow] (junc) -| (ssec.north);
+\draw[flow] (junc) -| (acc.north);
+\fill[black!75] (junc) circle (1.1pt);
+\draw[flow] (verif) -- (ssec);
+\draw[flow] (ssec.south) -- ([xshift=-10.5mm]agg.north);
+\draw[flow] (lat.south) -- (agg.north);
+\draw[flow] (acc.south) -- ([xshift=10.5mm]agg.north);
+\draw[flow] (agg.south) -- ++(0,-0.24) -| (conf.north);
+\draw[flow] (agg.south) -- ++(0,-0.24) -| (rej.north);
+\node[fill=gray!4, inner sep=1.5pt, font=\scriptsize] at (4.75,-8.45) {$\geq \tau_{\HEPI}$};
+\node[fill=gray!4, inner sep=1.5pt, font=\scriptsize] at (6.00,-8.45) {$< \tau_{\HEPI}$};
+
+%% =============== spine artifact pills (straddle band bottom edges) ===============
+\node[pill] at (5.375,-3.38) {$\mathbf{ct}(x)$\hspace{4pt}{\scriptsize\color{black!55}encrypted record}};
+\node[pill] at (5.375,-5.44) {$\mathbf{ct}(y)$\hspace{4pt}{\scriptsize\color{black!55}encrypted result}};
+
+%% =============== phase tabs ===============
+\node[tab] at (0.35,0) {Phase 1: Encrypted Submission};
+\node[tab] at (0.35,-3.98) {Phase 2: Homomorphic Inference};
+\node[anchor=east, fill=white, draw=black!40, line width=0.5pt, rounded corners=1.5pt,
+      inner xsep=3.5pt, inner ysep=1.8pt, font=\scriptsize, text=black!60]
+      at (8.1,-3.98) {no decryption};
+\node[tab] at (0.35,-6.04) {Phase 3: Audit Verification};
+
+\end{tikzpicture}

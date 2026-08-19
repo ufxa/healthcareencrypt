@@ -1,0 +1,100 @@
+% Figure 3 -- HE-MedInfer Algorithm + HEPI Novel Metric
+% Uses algorithm2e package (same style as Artigo 11 - GuardMark)
+
+\begin{algorithm*}[tp]
+\DontPrintSemicolon
+\SetAlgoLined
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\SetKwComment{Comment}{$\triangleright$\ }{}
+
+\caption{\framework{}: Encrypted Submission, Homomorphic Inference, and Audit
+  Verification. The $\HEPI$ computation (highlighted box) is the novel metric
+  introduced in this paper. Complexity: encryption $O(d\log n)$; inference
+  $O(d\cdot L\cdot n\log n)$; audit $O(1)$. (Simulation-based evaluation; see
+  Section~\ref{sec:eval}.)}
+\label{fig:algorithm}
+
+\Input{Clinical feature vector $x \in \mathbb{R}^d$; CKKS keys $(pk, sk, evk)$;
+       model weights $\{W_l, b_l\}_{l=1}^{L}$; plaintext accuracy
+       $A_{\text{plain}}$ and latency $L_{\text{plain}}$; $\HEPI$ weights
+       $\alpha, \beta, \gamma$ with $\alpha+\beta+\gamma=1$}
+\Output{Diagnostic prediction $\hat{y}$; privacy index $\HEPI(\hat{\Mod}) \in [0,1]$}
+
+\BlankLine
+\tcp{\textbf{Phase 1: Encrypted Submission (Encryption Agent, EA)}}
+$x_{\text{norm}} \leftarrow \textsc{Normalize}(x,\, [-1,1])$\;
+$\{x_1,\dots,x_k\} \leftarrow \textsc{SIMD-Pack}(x_{\text{norm}},\, \texttt{slot\_count})$
+  \Comment{batch 512 records/ciphertext}\;
+$\mathbf{ct} \leftarrow \Enc_{pk}(x_{\text{norm}})$
+  \Comment{CKKS encryption, $n=2^{14}$, 128-bit security}\;
+$\mathsf{com} \leftarrow H(\mathbf{ct} \,\|\, \tau_{\text{submit}})$
+  \Comment{audit commitment}\;
+
+\BlankLine
+\tcp{\textbf{Phase 2: Homomorphic Inference (Inference Agent, IA)}}
+$\mathbf{h} \leftarrow \mathbf{ct}$\;
+\For{$l = 1$ \KwTo $L$}{
+  $\mathbf{h} \leftarrow W_l \odot_{\text{HE}} \mathbf{h} \,+_{\text{HE}}\, b_l$
+    \Comment{homomorphic linear layer}\;
+  \If{$l < L$}{
+    $\mathbf{h} \leftarrow \widehat{\sigma}_7(\mathbf{h})$
+      \Comment{degree-7 Chebyshev approx.\ of ReLU over $[-5,5]$}\;
+  }
+}
+$\mathbf{ct}(y) \leftarrow \mathbf{h}$
+  \Comment{encrypted diagnostic result, no decryption at server}\;
+
+\BlankLine
+\hrulefill\;
+\BlankLine
+\tcp{\textbf{Phase 3: Audit Verification (Audit Agent, AA)}}
+\SetKwFunction{FVerify}{Verify}
+\SetKwProg{Fn}{Function}{:}{}
+\Fn{\FVerify{$\mathbf{ct}(y),\, sk,\, \mathsf{com}$}}{
+  \tcp{Decrypt and score at the trusted Data Owner / Audit Agent}
+  $\hat{y} \leftarrow \mathsf{Dec}_{sk}(\mathbf{ct}(y))$\;
+  $\textsc{AuditLog.Append}(\mathsf{com},\, H(\mathbf{ct}(y)))$\;
+
+  \tcp{Security: bits of classical security of the RLWE parameter set}
+  $\lambda \leftarrow \textsc{LatticeEstimator}(n, q, \chi)$
+    \Comment{not the noise budget}\;
+  $S_{\text{sec}} \leftarrow \min(1,\, \lambda / 128)$\;
+
+  \tcp{Overhead: log-scaled, strictly positive for any finite overhead}
+  $L_{\text{HE}} \leftarrow \textsc{ElapsedTime}()$;\quad
+  $r \leftarrow L_{\text{HE}} / L_{\text{plain}}$\;
+  $O_{\text{HE}} \leftarrow (1 + \log_{10} r)^{-1}$\;
+
+  \tcp{Utility: AUROC on held-out validation (class imbalance 11.5\%)}
+  $A_{\text{HE}} \leftarrow \textsc{EvaluateAUROC}(\hat{y})$\;
+  $Q_{\text{acc}} \leftarrow 1 - |A_{\text{plain}} - A_{\text{HE}}| / A_{\text{plain}}$\;
+
+  \BlankLine
+  \tcp{Novel Metric: HE Privacy Index (HEPI)}
+  \begin{tcolorbox}[colback=yellow!8, colframe=orange!70!black,
+    boxrule=0.8pt, left=4pt, right=4pt, top=2pt, bottom=2pt,
+    width=\dimexpr\linewidth-48pt\relax]
+  \centering
+  \resizebox{0.86\linewidth}{!}{%
+  $\displaystyle \HEPI(\hat{\Mod}) \;=\; \alpha \cdot \underbrace{\min\!\Big(1, \tfrac{\lambda}{128}\Big)}_{S_{\text{sec}}}
+    \;+\; \beta \cdot \underbrace{\Big(1 + \log_{10}\tfrac{L_{\text{HE}}}{L_{\text{plain}}}\Big)^{-1}}_{O_{\text{HE}}}
+    \;+\; \gamma \cdot \underbrace{\Big(1 - \tfrac{|A_{\text{plain}} - A_{\text{HE}}|}{A_{\text{plain}}}\Big)}_{Q_{\text{acc}}}$%
+  }\par
+  \medskip
+  \centering\footnotesize $\alpha+\beta+\gamma=1$; non-HE methods have
+  $S_{\text{sec}}=0$, capping $\HEPI \leq \beta+\gamma$
+  \end{tcolorbox}
+
+  \Return $\hat{y},\; \HEPI(\hat{\Mod}) \geq \tau_{\HEPI}$
+    \Comment{default $\tau_{\HEPI} = 0.70$}\;
+}
+
+\BlankLine
+\textbf{Complexity:}
+Encryption $O(d \log n)$;
+Homomorphic Inference $O(d \cdot L \cdot n \log n)$;
+Audit / $\HEPI$ computation $O(1)$,
+where $d$ = feature dimension, $L$ = network depth, $n$ = CKKS polynomial
+modulus degree.
+\end{algorithm*}
