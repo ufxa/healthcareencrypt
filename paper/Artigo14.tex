@@ -97,12 +97,13 @@ uses a synthetic cohort rather than the restricted-access MIMIC-III records
 themselves, the reported accuracies establish internal consistency of the
 pipeline rather than externally validated clinical performance.
 % [Narrow impact]
-Healthcare organizations can deploy \framework{} to satisfy the HIPAA
-Security Rule's technical safeguards and material GDPR obligations for
-encrypted inference, without sacrificing diagnostic utility and without
-exposing plaintext PHI to the inference infrastructure; correctness of the
-returned result, unlike its confidentiality, still depends on that
-infrastructure behaving honestly (Sec.~\ref{sec:threat}).
+Healthcare organizations can deploy \framework{} to satisfy the
+confidentiality-related technical safeguards of the HIPAA Security Rule and
+material GDPR obligations for encrypted inference, without sacrificing
+diagnostic utility and without exposing plaintext PHI to the inference
+infrastructure; the HIPAA Integrity Controls safeguard is not addressed, and
+correctness of the returned result, unlike its confidentiality, still
+depends on that infrastructure behaving honestly (Sec.~\ref{sec:threat}).
 % [Broad impact]
 This work advances the broader agenda of privacy-by-design AI, enabling
 responsible deployment of clinical AI in jurisdictions with strict data
@@ -188,7 +189,7 @@ This paper makes the following contributions:
 
   \item We provide a formal compliance mapping of \framework{} against HIPAA
     Security Rule, GDPR Article 25 (data protection by design), and NIST
-    SP 800-175B, demonstrating that the framework satisfies the principal
+    SP 800-175B~\cite{nist2020sp800175b}, demonstrating that the framework satisfies the principal
     confidentiality-related technical safeguards for encrypted health data
     processing, though not the Integrity Controls safeguard, which remains
     an open problem for this class of system (Sec.~\ref{sec:security}).
@@ -577,7 +578,10 @@ Figure~\ref{fig:overview} presents the high-level architecture.
 side (Encryption Tier) using CKKS, forwarded to the Inference Server (Inference
 Tier) which runs the ML model without decryption, and the encrypted result is
 returned and logged (Audit Tier). No plaintext patient data is ever exposed
-outside the Data Owner's trust boundary.}
+outside the Data Owner's trust boundary. The Key Authority (KA) is drawn as a
+separate box for functional clarity, but in the baseline configuration this
+paper evaluates it is physically co-located inside the Data Owner's own trust
+boundary, not an independent third party (Sec.~\ref{sec:ka}).}
 \label{fig:overview}
 \input{figures/fig1_overview.tex}
 \end{figure*}
@@ -853,7 +857,7 @@ Business Associate & HIPAA 164.308(b)(1) & \emph{Not eliminated}: BAA still requ
 Data Minimization & GDPR Art.~5(1)(c) & SIMD slot packing (no redundancy) \\
 Privacy by Design & GDPR Art.~25 & HE-first architecture \\
 Pseudonymization & GDPR Art.~32(1)(a) & Encryption as Art.~32 safeguard \\
-Cryptographic Algorithm & NIST SP 800-175B$^\dagger$ & CKKS (RLWE, 128-bit security) \\
+Cryptographic Algorithm & NIST SP 800-175B~\cite{nist2020sp800175b}$^\dagger$ & CKKS (RLWE, 128-bit security) \\
 \bottomrule
 \multicolumn{3}{@{}p{0.98\columnwidth}}{\footnotesize $^\dagger$Algorithm and
 parameter selection guidance only; FIPS 140-3 cryptographic \emph{module}
@@ -1028,7 +1032,7 @@ number in this section is exactly reproducible.
   & Baseline (Lee et al.) & CKKS-based CNN~\cite{lee2022privacypreserving} \\
 \midrule
 \multirow{5}{*}{\textbf{Protocol}}
-  & Batches     & 512 records/ciphertext (SIMD packing, $n=2^{15}{=}32{,}768$ slots avail.) \\
+  & Batches     & 512 records/ciphertext (SIMD packing, $n/2=16{,}384$ slots avail.\ at $n=2^{15}$) \\
   & Repetitions & Plaintext/DP-SGD: 10 runs, seeds $42\ldots51$. \framework{}/Lee: 1 real run each \\
   & Parallelism & 8 worker processes (heavily shared research cluster; Sec.~\ref{sec:ckks-depth}) \\
   & Configurations & $n=2^{15}$ (degree-7, \framework{}) and $n=2^{15}$ (degree-3, Lee proxy) \\
@@ -1046,9 +1050,15 @@ number in this section is exactly reproducible.
 
 We compare \framework{} against three baselines: (i)~\textbf{Plaintext MLP},
 the same 3-layer MLP trained and evaluated on unencrypted MIMIC-III features
-(upper-bound reference); (ii)~\textbf{Lee et al.}~\cite{lee2022privacypreserving},
-re-implemented with the CKKS parameters from their paper, adapted to tabular
-clinical features; and (iii)~\textbf{Differential Privacy MLP} (DP-SGD,
+(upper-bound reference); (ii)~\textbf{Lee et al.}~\cite{lee2022privacypreserving}
+(proxy), re-implemented under this paper's own $n=2^{15}$ CKKS parameter set
+(Sec.~\ref{sec:ckks-depth}) and adapted to tabular clinical features, using
+their degree-3 activation choice rather than the parameter set reported in
+their original paper; this proxy is architecturally identical to
+\framework{} except for activation degree (Sec.~\ref{sec:eval},
+Ablation Study), which lets the comparison isolate that one design
+difference rather than confound it with an unrelated parameter choice; and
+(iii)~\textbf{Differential Privacy MLP} (DP-SGD,
 $\epsilon = 1.0$, $\delta = 10^{-5}$) \cite{abadi2016deep}, following the
 $(\epsilon,\delta)$-differential privacy formalism of Dwork et
 al.~\cite{dwork2006calibrating}, representing
@@ -1607,7 +1617,7 @@ over that baseline is therefore architectural and regulatory, not a demonstrated
 advantage, and we report the corrected comparison rather than an earlier,
 unimplemented projection of a $0.033$-AUROC margin. \framework{} provides a
 compliance mapping to the HIPAA technical safeguards, GDPR Articles 25 and
-32, and NIST SP 800-175B that the Lee et al.\ proxy does not, though this
+32, and NIST SP 800-175B~\cite{nist2020sp800175b} that the Lee et al.\ proxy does not, though this
 mapping does not address computational integrity under a malicious server
 (Sec.~\ref{sec:security}).
 

@@ -5,7 +5,8 @@
 % B<=512 (one ciphertext regardless of slot fill) and scales as
 % ceil(B/512) for B>512; plaintext is assumed to scale linearly with B on
 % a single CPU thread. Log-y axis: the real B=512 anchors span 534,100 ms
-% (HE-MedInfer) down to 1.42 ms (plaintext), a ~4-decade range.
+% (HE-MedInfer) down to 1.42 ms (plaintext), a ~5.6-decade range (matches
+% the paper's "four to five orders of magnitude" latency-overhead framing).
 \begin{tikzpicture}
 \begin{axis}[
   width=\columnwidth,
