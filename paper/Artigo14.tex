@@ -631,7 +631,15 @@ consuming 1 level for the ciphertext-plaintext weighted sum) and 3 polynomial
 activations (each consuming \emph{powers depth} $+1$ levels, Table~\ref{tab:cheb}),
 the network requires 13--16 sequential multiplicative levels depending on
 activation degree, and Microsoft SEAL implements no CKKS bootstrapping, so
-this budget must be met by the parameter set alone.
+this budget must be met by the parameter set alone. Bootstrapping-capable
+toolchains exist and would relax this constraint: Ju et
+al.~\cite{ju2024neujeans} jointly optimize convolution and FHE bootstrapping
+to sustain deep encrypted CNN inference at fixed parameters, at the cost of
+the substantially heavier engineering and per-bootstrap latency that
+motivated our own no-bootstrapping, parameter-budgeted design; adopting a
+bootstrapping toolchain is the natural way a future version of \framework{}
+could decouple network depth from the $n=2^{13}$/$n=2^{14}$ infeasibility
+this section reports.
 
 Testing the three CKKS polynomial-modulus degrees against this requirement
 gives a result an unfit design would not have anticipated: $n=2^{13}$ is
@@ -779,7 +787,16 @@ inference result.
 
 \subsection{Compliance Mapping}
 
-Table~\ref{tab:compliance} maps \framework{} components to regulatory controls.
+Table~\ref{tab:compliance} maps \framework{} components to regulatory
+controls. This mapping exercise is not merely theoretical: Riou et
+al.~\cite{riou2025gdpr} report an implementation study of GDPR compliance in
+a real university-hospital clinical data warehouse, finding that the
+practical burden falls disproportionately on data-minimization and
+purpose-limitation controls rather than on encryption at rest, which
+existing infrastructure typically already satisfies; \framework{}'s
+contribution is specifically to the harder, less commonly addressed control
+in their account, purpose limitation for a third-party inference server that
+never needs a lawful basis to see plaintext at all.
 
 \begin{table}[t]
 \caption{Regulatory Compliance Mapping}
