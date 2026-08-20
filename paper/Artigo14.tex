@@ -275,7 +275,15 @@ Generic secure-computation frameworks such as PySyft
 privacy-preserving inference to honest-majority multi-party settings, but
 both assume the presence of multiple independent computing parties, an
 assumption that does not hold in the common single-cloud-provider deployment
-model of most healthcare institutions.
+model of most healthcare institutions. More recently, Liu et
+al.~\cite{liu2024privacy} propose a general HE-and-neural-network privacy
+protection strategy, and Joo et al.~\cite{joo2025keyset} optimize the
+rotation-key set required for CKKS-encrypted neural network inference,
+reporting substantial reductions in rotation-key generation and evaluation
+time; neither targets a clinical dataset or reports a security-latency
+composite, and \framework{}'s batch-in-slots SIMD design avoids Galois
+rotations entirely (Sec.~\ref{sec:ckks-depth}), sidestepping the specific
+cost their keyset optimization addresses.
 
 \subsection{Federated Learning for Healthcare}
 
@@ -302,8 +310,22 @@ scenario \framework{} targets.
 
 \subsection{Homomorphic Encryption in Clinical Applications}
 
-A smaller body of work applies HE directly to clinical prediction tasks.
-Kim et al.~\cite{kim2018logreg} implement HE-based logistic regression for
+A smaller body of work applies HE directly to clinical prediction tasks, and
+recent work has continued to grow this space. Haq et
+al.~\cite{haq2025tabular} evaluate CKKS-based inference for logistic
+regression, SVM, and a lightweight MLP directly on medical tabular data,
+reporting hybrid LR-MLP and SVM-MLP variants intended to accelerate
+convergence; their evaluation targets classification accuracy rather than a
+joint security-latency-compliance metric, and does not address auditability.
+Naresh and Reddi~\cite{naresh2025heart} apply FHE-driven logistic regression
+to heart disease prediction, matching plaintext accuracy but, like Haq et
+al., without a compliance mapping or multi-agent audit structure.
+Bhattacharjee et al.~\cite{bhattacharjee2025fedhealthcare} combine federated
+learning with lightweight additive HE in FedHealthcare, which reduces
+per-round computational cost relative to full CKKS but requires aggregated
+values to be decrypted at the federation server, a partial-decryption
+exposure that \framework{}'s design avoids by keeping the Inference Server
+fully key-blind throughout. Kim et al.~\cite{kim2018logreg} implement HE-based logistic regression for
 clinical risk scoring, reporting practical runtimes for linear models but not
 extending their approach to deep architectures. Vizitiu et
 al.~\cite{vizitiu2021applying} apply HE to deep neural networks over medical
@@ -348,12 +370,17 @@ across seven evaluation criteria.
 \textbf{Work} & \textbf{Scheme} & \textbf{Clinical Data} & \textbf{No Partial Decrypt} & \textbf{3-Agent} & \textbf{Compliance Map} & \textbf{Novel Metric} & \textbf{Year} \\
 \midrule
 Lee et al.~\cite{lee2022privacypreserving} (baseline) & CKKS & \checkno & \checkyes & \checkno & \checkno & \checkno & 2022 \\
+Joo et al.~\cite{joo2025keyset}            & CKKS & \checkno & \checkyes & \checkno & \checkno & \checkno & 2025 \\
+Haq et al.~\cite{haq2025tabular}           & CKKS & \checkyes & \checkyes & \checkno & \checkno & \checkno & 2025 \\
+Naresh and Reddi~\cite{naresh2025heart}    & FHE  & \checkyes & \checkyes & \checkno & \checkno & \checkno & 2025 \\
+Bhattacharjee et al.~\cite{bhattacharjee2025fedhealthcare} & Additive HE & \checkyes & \checkno  & \checkno & \checkno & \checkno & 2025 \\
+Liu et al.~\cite{liu2024privacy}           & HE   & \checkno & \checkyes & \checkno & \checkno & \checkno & 2024 \\
+Ran et al.~\cite{ran2023inferring}         & CKKS & \checkno & \checkyes & \checkno & \checkno & \checkno & 2023 \\
+Ali et al.~\cite{ali2023secure}            & BFV  & \checkyes & \checkno  & \checkno & \checkno & \checkno & 2023 \\
 CryptoNets~\cite{gilad2016cryptonets}      & YASHE~\cite{bos2013yashe} & \checkno & \checkyes & \checkno & \checkno & \checkno & 2016 \\
 POSEIDON~\cite{sav2021poseidon}            & LHE  & \checkno & \checkyes & \checkno & \checkno & \checkno & 2021 \\
 SecureML~\cite{mohassel2017secureml}       & HE+SS & \checkno & \checkno  & \checkno & \checkno & \checkno & 2017 \\
 Wood et al.~\cite{wood2020homomorphic}     & Survey & \checkyes & N/A      & \checkno & \checkno & \checkno & 2020 \\
-Ran et al.~\cite{ran2023inferring}         & CKKS & \checkno & \checkyes & \checkno & \checkno & \checkno & 2023 \\
-Ali et al.~\cite{ali2023secure}            & BFV  & \checkyes & \checkno  & \checkno & \checkno & \checkno & 2023 \\
 Kim et al.~\cite{kim2018logreg}              & CKKS & \checkyes & \checkyes & \checkno & \checkno & \checkno & 2018 \\
 Vizitiu et al.~\cite{vizitiu2021applying}  & MORE & \checkyes & \checkyes & \checkno & \checkno & \checkno & 2020 \\
 MedCo~\cite{raisaro2018medco}              & Threshold & \checkyes & \checkyes & \checkno & \checkno & \checkno & 2018 \\
