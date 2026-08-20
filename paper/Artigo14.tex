@@ -670,7 +670,12 @@ The multiplicative depth this architecture requires is not a design choice we
 computed in advance; it is a constraint we discovered by implementing and
 running the encrypted pipeline, and we report it because the discrepancy
 between the assumed and the required parameter set is itself informative for
-anyone implementing a similar multi-layer HE-MLP. With 4 linear layers (each
+anyone implementing a similar multi-layer HE-MLP. This is consistent with
+Goganaboina and Wu's recent observation that CKKS parameter selection remains
+predominantly guided by trial-and-error and vendor defaults rather than by a
+closed-form procedure that takes circuit depth as
+input~\cite{goganaboina2026ckksparams}; the empirical depth budget this
+section reports is one concrete instance of exactly that gap. With 4 linear layers (each
 consuming 1 level for the ciphertext-plaintext weighted sum) and 3 polynomial
 activations (each consuming \emph{powers depth} $+1$ levels, Table~\ref{tab:cheb}),
 the network requires 13--16 sequential multiplicative levels depending on
@@ -1595,7 +1600,14 @@ Inference Server but correctness does not. A server that returns an arbitrary
 well-formed ciphertext produces a decryptable, clinically wrong prediction that
 the audit chain records faithfully and does not flag. We regard closing this
 gap through verifiable computation over ciphertexts as the most important open
-problem for clinical deployment of this class of system.
+problem for clinical deployment of this class of system. Recent work on
+verifiable HE, such as Mahato and Chakraborty's fast verifiable FHE technique
+for cloud-hosted secret computation~\cite{mahato2025verifiable}, targets
+exactly this gap, though at a proof-generation overhead that has not, to our
+knowledge, been characterized for a multi-layer CKKS-MLP circuit at the depth
+this paper's architecture requires; whether such techniques remain practical
+once stacked on top of the latency this paper already measures is an open
+question, not one this paper answers.
 
 \emph{Subgroup performance.} We report only pooled metrics. Because the
 synthetic cohort reproduces the demographic composition of MIMIC-III, which is
