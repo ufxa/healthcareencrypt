@@ -88,9 +88,12 @@ plaintext model's own seed-to-seed training variation, yielding a mean
 \HEPI{} of 0.830.
 % [Weaker result]
 Measured inference latency is 3.8$\times$10$^5$ higher than plaintext on the
-same CPU, dominated entirely by the multiplicative-depth cost of evaluating
-three homomorphic activation layers rather than by network transfer;
-this is a substantially larger overhead than depth-limited HE designs typically
+same CPU, dominated by the multiplicative-depth cost of the full
+evaluation circuit rather than by network transfer; an ablation isolating
+this cost attributes it chiefly to the four homomorphic linear layers, not
+the three polynomial activation layers, whose degree can be nearly halved
+at effectively no latency cost (Sec.~\ref{sec:eval}). This
+is a substantially larger overhead than depth-limited HE designs typically
 report, and large enough that it, not accuracy loss, is the binding
 deployment constraint (Sec.~\ref{sec:discussion}). Because our evaluation
 uses a synthetic cohort rather than the restricted-access MIMIC-III records
@@ -906,7 +909,7 @@ unit, the institutional privacy office, and an offline escrow share), not
 between KA and DO; (ii)~\emph{evaluation key leakage}, mitigated by evaluating
 relinearization keys on the server without exposing the secret key, and by
 provisioning no Galois keys at all since this design does not use CKKS
-rotations (Sec.~\ref{sec:threat}); and
+rotations (Sec.~\ref{sec:ckks-depth}); and
 (iii)~\emph{timing side-channel}, mitigated by constant-time polynomial
 arithmetic implemented via the Microsoft SEAL library \cite{seal2024}.
 
@@ -1106,9 +1109,11 @@ finding that a fully-implemented (as opposed to assumed) parameter budget for
 a multi-layer HE-MLP reveals.
 
 \textbf{Audit Agent:} Commitment generation latency of $0.8 \pm 0.1$ ms, with
-hash-chain consistency verified over all $10$ runs and $2{,}110$ logged
-inference events, and zero chain violations under a tamper-injection test in
-which a randomly selected past entry was mutated.
+hash-chain consistency verified over the $18$ batch-level commitments logged
+across the two single real encrypted-pipeline runs (\framework{} and the Lee
+et al.\ proxy, $9$ batches each, Sec.~\ref{sec:eval}), and zero chain
+violations under a tamper-injection test in which a randomly selected past
+entry was mutated.
 
 \textbf{End-to-end round trip.} With the measured per-batch compute at
 $534.1$ s, network transfer is no longer a meaningful term in the total.
