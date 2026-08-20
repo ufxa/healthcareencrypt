@@ -1,0 +1,29 @@
+{
+  "method": "lee_et_al_proxy",
+  "ckks_n": 15,
+  "poly_degree": 3,
+  "chebyshev_linf": 0.4688670117626561,
+  "chebyshev_rmse": 0.18046716043666866,
+  "auroc": 0.8623230253353205,
+  "accuracy": 0.8926206244087039,
+  "ece": 0.030934909400129443,
+  "threshold": 0.36000000000000004,
+  "n_test": 4228,
+  "batch_size": 512,
+  "n_workers": 8,
+  "latency_ms_per_batch_mean": 513021.4480823941,
+  "latency_ms_per_batch_sd": 143987.07062582197,
+  "latency_ms_per_record": 1001.995015785926,
+  "batch_latencies_ms": [
+    605098.0713367462,
+    414163.67506980896,
+    612060.448884964,
+    543914.8461818695,
+    259985.84294319153,
+    320424.26443099976,
+    618281.569480896,
+    644557.7373504639,
+    598706.5770626068
+  ],
+  "proxy_note": "Same ClinicalMLP weights and CKKS parameters as HE-MedInfer, evaluated with a degree-3 polynomial activation standing in for Lee et al.'s undisclosed coarser approximation -- see module docstring."
+}
