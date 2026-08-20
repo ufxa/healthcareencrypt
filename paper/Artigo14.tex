@@ -118,7 +118,9 @@ Artificial intelligence is rapidly transforming clinical medicine, enabling
 diagnostic systems that match or surpass specialist-level performance in tasks
 ranging from radiological image interpretation to early sepsis detection
 \cite{rajpurkar2022ai,topol2023highperformance,esteva2019guide,miotto2018deep,
-chowdhury2023survey,natarajan2023clinicalml}.
+chowdhury2023survey,natarajan2023clinicalml}, a trajectory that recent
+work on generative and foundation models in medicine indicates is
+accelerating rather than plateauing~\cite{teo2025genai}.
 However, the deployment of machine learning inference in production healthcare
 environments requires that patient data traverse untrusted computational
 infrastructure, including cloud platforms, third-party APIs, and shared
@@ -275,7 +277,10 @@ Generic secure-computation frameworks such as PySyft
 privacy-preserving inference to honest-majority multi-party settings, but
 both assume the presence of multiple independent computing parties, an
 assumption that does not hold in the common single-cloud-provider deployment
-model of most healthcare institutions. More recently, Liu et
+model of most healthcare institutions; Mudannayake et
+al.~\cite{mudannayake2025smpc} survey this broader secure multi-party
+computation landscape and confirm that the multi-party assumption remains a
+structural, not merely historical, limitation of the family. More recently, Liu et
 al.~\cite{liu2024privacy} propose a general HE-and-neural-network privacy
 protection strategy, and Joo et al.~\cite{joo2025keyset} optimize the
 rotation-key set required for CKKS-encrypted neural network inference,
@@ -298,7 +303,10 @@ neural network learning across clinical institutions via lattice-based HE,
 while Froelicher et al.~\cite{froelicher2021scalable} show scalable distributed
 learning under threshold HE, and Ma et al.~\cite{ma2022federated} propose a
 multi-key HE scheme that avoids a single trusted key holder in federated
-aggregation. Xu et al.~\cite{xu2019hybridalpha} combine functional encryption
+aggregation; Shen et al.~\cite{shen2024multikey} extend this line with a more
+flexible multi-key FHE aggregation protocol, though both still require a
+federation of independent institutions rather than the single-institution
+deployment \framework{} targets. Xu et al.~\cite{xu2019hybridalpha} combine functional encryption
 with differential privacy in HybridAlpha, and Zhou et
 al.~\cite{zhou2023privacypreserving2} revisit functional-encryption-based FL
 to reduce per-round key management cost. VerifyNet \cite{xu2024heprivacy}
