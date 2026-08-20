@@ -103,8 +103,9 @@ pipeline rather than externally validated clinical performance.
 % [Narrow impact]
 Healthcare organizations can deploy \framework{} to satisfy the
 confidentiality-related technical safeguards of the HIPAA Security Rule and
-material GDPR obligations for encrypted inference, without sacrificing
-diagnostic utility and without exposing plaintext PHI to the inference
+material GDPR obligations for encrypted inference, without a demonstrated
+clinically meaningful sacrifice in diagnostic utility and without exposing
+plaintext PHI to the inference
 infrastructure; the HIPAA Integrity Controls safeguard is not addressed, and
 correctness of the returned result, unlike its confidentiality, still
 depends on that infrastructure behaving honestly (Sec.~\ref{sec:threat}).
@@ -1289,7 +1290,7 @@ approximation with continuity correction rather than the exact permutation
 distribution, gives $U = 100$,
 $p = 1.8 \times 10^{-4}$ (two-sided), rank-biserial $r = 1.00$: every
 plaintext run outperforms every DP-SGD run, consistent with the
-$0.024$ mean AUROC gap exceeding three pooled standard deviations.
+$0.023$ mean AUROC gap exceeding three pooled standard deviations.
 
 We do \emph{not} report a significance test between \framework{} and Lee et
 al., and we state why rather than omit the comparison silently:
