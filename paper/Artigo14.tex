@@ -1084,14 +1084,14 @@ set.
 records/second, single-threaded, for the 48-feature vector (single real
 measurement, not averaged across runs; Sec.~\ref{sec:ckks-depth}). A single
 CKKS ciphertext at the real $n = 2^{15}$ configuration this paper uses
-occupies $6.858$ MB (measured serialized size), and carries 512
-SIMD-packed records, giving an amortized $13.72$ KB per patient record. SIMD
+occupies $6.858$ MB (measured serialized size, decimal convention: $1\,\text{MB}=10^6$ bytes), and carries 512
+SIMD-packed records, giving an amortized $13.39$ KB per patient record. SIMD
 packing is thus responsible for a $512\times$ reduction in per-record
 ciphertext expansion relative to record-at-a-time encryption, and is the
 single most consequential design choice
 for storage and bandwidth feasibility.
 
-\textbf{Inference Agent:} Mean inference latency of $534.1 \pm 61.7$ s per
+\textbf{Inference Agent:} Mean inference latency of $534.1 \pm 60.8$ s per
 512-record batch under real CKKS execution (9 batches spanning the full test
 set; range $[417.3, 605.1]$ s), against $1.42$ ms for plaintext inference on
 the same single CPU core (matched to one HE worker process for a fair
@@ -1125,7 +1125,10 @@ transfer would dominate at low bandwidth): once the real multiplicative-depth
 cost of Sec.~\ref{sec:ckks-depth} is accounted for, homomorphic evaluation
 dominates the end-to-end latency under any realistic network condition, and
 network engineering is not a productive place to invest for reducing
-\framework{}'s response time.
+\framework{}'s response time. Figure~\ref{fig:scalability} derives how this
+per-batch cost extrapolates across batch sizes from the single measured
+$B=512$ anchor for each method, and shows the sparse-batch penalty this
+implies (Sec.~\ref{sec:discussion}).
 
 \subsection{Diagnostic Performance}
 
@@ -1442,7 +1445,7 @@ than the pre-implementation design anticipated.
 \subsection{Operational Cost}
 
 Confidentiality is not free, and the relevant question for a hospital is
-whether the price is payable. Per patient record, \framework{} adds $13.72$ KB
+whether the price is payable. Per patient record, \framework{} adds $13.39$ KB
 of ciphertext storage, larger than an earlier design estimate ($3.42$ KB) had
 assumed because that estimate was computed for the $n = 2^{14}$ parameter
 set, not the $n = 2^{15}$ configuration the real depth requirement in
