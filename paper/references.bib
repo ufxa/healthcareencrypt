@@ -6,12 +6,12 @@
 
 % --- Homomorphic Encryption Foundations ---
 
-@article{gentry2009fully,
-  author  = {Gentry, Craig},
-  title   = {A Fully Homomorphic Encryption Scheme},
-  journal = {PhD Thesis, Stanford University},
-  year    = {2009},
-  doi     = {10.1145/1536414.1536440}
+@inproceedings{gentry2009fully,
+  author    = {Gentry, Craig},
+  title     = {Fully Homomorphic Encryption Using Ideal Lattices},
+  booktitle = {Proceedings of the Forty-First Annual ACM Symposium on Theory of Computing (STOC '09)},
+  year      = {2009},
+  doi       = {10.1145/1536414.1536440}
 }
 
 @inproceedings{cheon2017ckks,
@@ -38,12 +38,12 @@
   doi       = {10.1007/978-3-030-77870-5_23}
 }
 
-@inproceedings{fan2012bfv,
-  author    = {Fan, Junfeng and Vercauteren, Frederik},
-  title     = {Somewhat Practical Fully Homomorphic Encryption},
-  booktitle = {IACR ePrint Archive},
-  year      = {2012},
-  doi       = {10.17487/RFC0000}
+@techreport{fan2012bfv,
+  author      = {Fan, Junfeng and Vercauteren, Frederik},
+  title       = {Somewhat Practical Fully Homomorphic Encryption},
+  institution = {IACR Cryptology ePrint Archive, Report 2012/144},
+  year        = {2012},
+  url         = {https://eprint.iacr.org/2012/144}
 }
 
 % --- HE Libraries ---
@@ -55,11 +55,14 @@
   doi    = {10.5281/zenodo.7419170}
 }
 
-@misc{heaan2024,
-  author = {{CryptoLab}},
-  title  = {{HEaaN}: Homomorphic Encryption for Arithmetic of Approximate Numbers Library},
-  year   = {2024},
-  doi    = {10.5281/zenodo.5XXX}
+@article{heaan2024,
+  author  = {Park, Sunjae and Song, Woosung and Nam, Seunghyeon and Kim, Hyeongyu and Shin, Junbum and Lee, Juneyoung},
+  title   = {{HEaaN.MLIR}: An Optimizing Compiler for Fast Ring-Based Homomorphic Encryption},
+  journal = {Proceedings of the ACM on Programming Languages},
+  volume  = {7},
+  number  = {PLDI},
+  year    = {2023},
+  doi     = {10.1145/3591228}
 }
 
 % --- Privacy-Preserving ML in Healthcare ---
@@ -107,10 +110,10 @@
 
 @article{edemekong2023hipaa,
   author  = {Edemekong, Peter F. and Annamaraju, Pavan and Haydel, Micelle J.},
-  title   = {{HIPAA} Compliance and Electronic Health Records},
-  journal = {StatPearls},
+  title   = {Health Insurance Portability and Accountability Act ({HIPAA})},
+  journal = {StatPearls Publishing (NCBI Bookshelf ID: NBK500019)},
   year    = {2023},
-  doi     = {10.32388/ABCDEF}
+  url     = {https://www.ncbi.nlm.nih.gov/books/NBK500019/}
 }
 
 % --- Federated Learning + HE ---
@@ -290,13 +293,6 @@
   doi     = {10.1145/3411501.3419425}
 }
 
-@article{chen2022cryptoml,
-  author  = {Chen, Zhihua and Laine, Kim and Player, Rachel},
-  title   = {Simple Encrypted Arithmetic Library v2.3.0},
-  journal = {Microsoft Research Tech Report},
-  year    = {2022},
-  doi     = {10.5281/zenodo.6778345}
-}
 
 @article{zhu2023securehealth,
   author  = {Zhu, Tao and Ye, Dayong and Wang, Wei and Zhou, Wanlei and Yu, Philip S.},

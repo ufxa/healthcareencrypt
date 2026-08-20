@@ -13,7 +13,12 @@
   introduced in this paper. Complexity: encryption $O(d\log n)$; inference
   $O(d\cdot L\cdot n\log n)$; audit $O(1)$. This pseudocode describes the
   general algorithm; Section~\ref{sec:eval} reports real, executed CKKS
-  measurements against it, not a simulation.}
+  measurements against it, not a simulation. The final return statement's
+  $\HEPI(\hat{\Mod}) \geq \tau_{\HEPI}$ gate at the shown default
+  ($\tau_{\HEPI}=0.70$) clears on our own measured configuration despite a
+  latency overhead Sec.~\ref{sec:discussion} calls deployment-disqualifying;
+  see Sec.~\ref{sec:eval} (Threats to Validity) before relying on this
+  default.}
 \label{fig:algorithm}
 
 \Input{Clinical feature vector $x \in \mathbb{R}^d$; CKKS keys $(pk, sk, evk)$;
