@@ -165,8 +165,7 @@ decryption at the inference server, fundamentally shifting the trust model of
 clinical AI deployment.
 
 Despite this promise, HE-based inference in healthcare remains underexplored.
-Prior works, such as CryptoNets \cite{gilad2016cryptonets} and HEMET
-\cite{lou2021hemet}, demonstrate the feasibility of encrypted neural network
+Prior works, such as CryptoNets \cite{gilad2016cryptonets}, demonstrate the feasibility of encrypted neural network
 inference on benchmark datasets (MNIST, CIFAR-10) but do not address the
 specific challenges of clinical data: high-dimensional tabular features,
 mixed data types, and the accuracy sensitivity of diagnostic applications.
@@ -317,10 +316,9 @@ cost their keyset optimization addresses.
 
 Federated learning (FL) reduces data exposure by training models locally and
 aggregating gradients, but gradients remain susceptible to reconstruction
-attacks \cite{zhu2023securehealth}. Zhang et al.~\cite{zhang2023survey}
-survey FL applications in healthcare, identifying communication overhead and
-inference-time privacy as open challenges beyond the training phase itself.
-Combining FL with HE addresses part of this
+attacks \cite{zhu2023securehealth}, and communication overhead and
+inference-time privacy remain open challenges beyond the training phase
+itself. Combining FL with HE addresses part of this
 gap: POSEIDON \cite{sav2021poseidon} demonstrates privacy-preserving federated
 neural network learning across clinical institutions via lattice-based HE,
 while Froelicher et al.~\cite{froelicher2021scalable} show scalable distributed
@@ -330,8 +328,8 @@ aggregation; Shen et al.~\cite{shen2024multikey} extend this line with a more
 flexible multi-key FHE aggregation protocol, though both still require a
 federation of independent institutions rather than the single-institution
 deployment \framework{} targets. Xu et al.~\cite{xu2019hybridalpha} combine functional encryption
-with differential privacy in HybridAlpha, and Zhou et
-al.~\cite{zhou2023privacypreserving2} revisit functional-encryption-based FL
+with differential privacy in HybridAlpha, and Chang et
+al.~\cite{chang2023functionalfl} revisit functional-encryption-based FL
 to reduce per-round key management cost. VerifyNet \cite{xu2024heprivacy}
 adds verifiability guarantees to federated aggregation but assumes an
 honest majority of participating institutions. None of these works addresses
@@ -361,8 +359,8 @@ clinical risk scoring, reporting practical runtimes for linear models but not
 extending their approach to deep architectures. Vizitiu et
 al.~\cite{vizitiu2021applying} apply HE to deep neural networks over medical
 imaging features, observing accuracy degradation comparable to the gap we
-report for tabular data. Kocabas and Soyata~\cite{kocabas2022privacypreserving}
-outline an HE pipeline for medical image analysis but stop at a feasibility
+report for tabular data. Kocabas and Soyata~\cite{kocabas2015medcloud}
+outline an HE pipeline for medical cloud computing but stop at a feasibility
 study without a deployable audit mechanism. MedCo
 \cite{raisaro2018medco} enables privacy-preserving exploration of distributed
 clinical and genomic data under threshold HE, targeting cohort-level queries
@@ -411,8 +409,6 @@ Haq et al.~\cite{haq2025tabular}           & CKKS & \checkyes & \checkyes & \che
 Naresh and Reddi~\cite{naresh2025heart}    & FHE  & \checkyes & \checkyes & \checkno & \checkno & \checkno & 2025 \\
 Bhattacharjee et al.~\cite{bhattacharjee2025fedhealthcare} & Additive HE & \checkyes & \checkno  & \checkno & \checkno & \checkno & 2025 \\
 Liu et al.~\cite{liu2024privacy}           & HE   & \checkno & \checkyes & \checkno & \checkno & \checkno & 2024 \\
-Ran et al.~\cite{ran2023inferring}         & CKKS & \checkno & \checkyes & \checkno & \checkno & \checkno & 2023 \\
-Ali et al.~\cite{ali2023secure}            & BFV  & \checkyes & \checkno  & \checkno & \checkno & \checkno & 2023 \\
 CryptoNets~\cite{gilad2016cryptonets}      & YASHE~\cite{bos2013yashe} & \checkno & \checkyes & \checkno & \checkno & \checkno & 2016 \\
 POSEIDON~\cite{sav2021poseidon}            & LHE  & \checkno & \checkyes & \checkno & \checkno & \checkno & 2021 \\
 SecureML~\cite{mohassel2017secureml}       & HE+SS & \checkno & \checkno  & \checkno & \checkno & \checkno & 2017 \\
