@@ -819,8 +819,10 @@ IND-CPA.
 
 By design, the Inference Server never holds the CKKS secret key; it operates
 exclusively on ciphertexts. The server's view consists of the public key, the
-evaluation key (relinearization and Galois keys), and the input/output
-ciphertexts. Under the honest-but-curious model, no information about the
+relinearization keys, and the input/output ciphertexts; because the
+batch-in-slots SIMD design avoids Galois rotations entirely
+(Sec.~\ref{sec:ckks-depth}), no Galois (rotation) keys are generated or
+provisioned to the server at all. Under the honest-but-curious model, no information about the
 plaintext patient record is leaked beyond what is implied by the encrypted
 inference result.
 
@@ -895,9 +897,16 @@ not by itself establish computational integrity.
 \subsection{Attack Surface Analysis}
 
 We identify three primary attack vectors: (i)~\emph{key compromise}, mitigated
-by threshold key sharing between KA and DO with a $(2,3)$ secret sharing
-scheme; (ii)~\emph{evaluation key leakage}, mitigated by evaluating
-relinearization keys on the server without exposing the secret key; and
+in the evaluated baseline by the KA/DO internal duty-separation control
+(Sec.~\ref{sec:ka}) that prevents any single administrator from unilaterally
+decrypting inference traffic, and, in the unevaluated threshold-key-management
+configuration also described in Sec.~\ref{sec:ka}, by a $(2,3)$ Shamir secret
+sharing scheme across three independent custodians (the clinical operations
+unit, the institutional privacy office, and an offline escrow share), not
+between KA and DO; (ii)~\emph{evaluation key leakage}, mitigated by evaluating
+relinearization keys on the server without exposing the secret key, and by
+provisioning no Galois keys at all since this design does not use CKKS
+rotations (Sec.~\ref{sec:threat}); and
 (iii)~\emph{timing side-channel}, mitigated by constant-time polynomial
 arithmetic implemented via the Microsoft SEAL library \cite{seal2024}.
 
@@ -1211,7 +1220,8 @@ identical accuracy in this single-run comparison ($89.3\%$ each; no
 significance test performed, Sec.~\ref{sec:eval}); the majority-class baseline
 is $88.5\%$ (dashed reference), so accuracy differences compress and AUROC
 in Table~\ref{tab:auroc} is the primary metric. Plaintext and DP-SGD error
-bars are 95\% CIs over 10 independently trained models; \framework{} and Lee
+bars are $\pm 1$ SD over 10 independently trained models, matching
+Table~\ref{tab:auroc}; \framework{} and Lee
 et al.\ are single-run point estimates (Sec.~\ref{sec:eval}). Results are
 computed on the synthetic cohort of Section~\ref{sec:datagen}, not on
 MIMIC-III records.}
