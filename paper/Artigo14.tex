@@ -83,9 +83,10 @@ encryption and homomorphic inference via Microsoft SEAL, not a numerical
 simulation of expected results. On the same trained model evaluated in both
 conditions, \framework{} attains an AUROC of 0.862 (accuracy 89.3\%, against
 an 88.5\% majority-class baseline) under full homomorphic encryption against
-0.861 (89.1\%) in plaintext, a single-run gap smaller in magnitude than the
-plaintext model's own seed-to-seed training variation, yielding a mean
-\HEPI{} of 0.830.
+0.861 (89.1\%) in plaintext, a single-run gap of $0.0015$, about $1.6\times$
+the plaintext model's own seed-to-seed training SD ($\pm 0.0009$) and far
+smaller than the $0.015$ gap an earlier, unimplemented design estimate had
+assumed, yielding a mean \HEPI{} of 0.830.
 % [Weaker result]
 Measured inference latency is 3.8$\times$10$^5$ higher than plaintext on the
 same CPU, dominated by the multiplicative-depth cost of the full
@@ -1144,10 +1145,11 @@ the $\pm 0.0009$ SD characterizes cross-seed \emph{training} variance among
 ten independently trained plaintext models, a different random process from
 the encrypted pipeline's own run-to-run variance, which we did not and could
 not affordably measure (Sec.~\ref{sec:eval}) and which may be larger or
-smaller. That the observed gap is small relative to this unrelated benchmark
-is suggestive, not proof, that encryption imposes no measurable AUROC cost
-for this architecture; a rigorous claim to that effect would require
-repeated CKKS runs, which Sec.~\ref{sec:eval} explains were not
+smaller. The observed gap ($0.0015$) is in fact somewhat larger, about
+$1.6\times$, than this unrelated benchmark ($0.0009$), so it does not by
+itself demonstrate that encryption imposes no measurable AUROC cost for
+this architecture; a rigorous claim either way would require repeated CKKS
+runs, which Sec.~\ref{sec:eval} explains were not
 computationally tractable here. This single-run gap is nonetheless
 materially smaller than an earlier, unimplemented estimate of this pipeline
 had assumed (a $0.015$ AUROC gap).
@@ -1188,7 +1190,7 @@ opposite direction of misrepresentation from what accuracy-only reporting
 usually produces, and a reminder that the two metrics answer different
 questions under class imbalance. Second, \framework{} and the Lee et al.\
 proxy show no meaningful separation in this single-run comparison: $0.8622$
-vs.\ $0.8623$ AUROC, a $-0.0001$ difference in \framework{}'s favor, smaller
+vs.\ $0.8623$ AUROC, a $-0.0001$ difference in the Lee et al.\ proxy's favor, smaller
 in magnitude than plaintext's own $\pm 0.0009$ seed-to-seed training SD (an
 unrelated benchmark cited here only for scale, not as a formal test; no
 significance test was run between these two single-run HE configurations,
@@ -1319,7 +1321,13 @@ hardware, so we report the value implied directly by the measured
 architecture (CKKS cost scales with ciphertext count, and SIMD packing is the
 only thing standing between one ciphertext per batch and one per record,
 Sec.~\ref{sec:ckks-depth}) rather than an independently executed data point,
-and label it as such.
+and label it as such. Applying \HEPI{}'s overhead term (Eq.~3) to this
+derived latency yields a further, non-obvious finding we report rather than
+smooth over: because $O_{\mathrm{HE}}$ is defined on the raw per-ciphertext
+circuit latency, which Sec.~\ref{sec:ckks-depth} establishes is flat
+regardless of slot occupancy, removing SIMD packing leaves $\HEPI{}$
+numerically unchanged even though it is, in every operationally meaningful
+sense, catastrophic ($512\times$ worse per-record throughput).
 
 \begin{table}[t]
 \caption{Ablation of \framework{} Design Decisions (full row and degree-3 row:
@@ -1335,10 +1343,10 @@ independently run; see text)}
 \midrule
 \textbf{Full \framework{}}   & \textbf{0.8622} & \textbf{1{,}043 ms} & \textbf{0.830} & --- \\
 Degree-3 (Lee proxy)\,$^\dagger$ & $0.8623$ & $1{,}002$ ms & $0.830$ & $\approx 0.000$ \\
-No SIMD ($\times 512$)\,$^\ddagger$ & $0.8622$ & $\approx 534$ s & $\approx 0.630$ & $\approx -0.200$ \\
+No SIMD ($\times 512$)\,$^\ddagger$ & $0.8622$ & $\approx 534$ s & $0.830$ & $0.000^\ddagger$ \\
 No Audit Agent               & 0.8622 & 1{,}043 ms & 0.830 & $0.000$ \\
 \bottomrule
-\multicolumn{5}{@{}p{0.98\columnwidth}}{\footnotesize $^\dagger$measured; $^\ddagger$derived, not independently run (see text).}
+\multicolumn{5}{@{}p{0.98\columnwidth}}{\footnotesize $^\dagger$measured; $^\ddagger$derived, not independently run; \HEPI{} is unchanged because Eq.~3's overhead term is defined on the raw per-ciphertext circuit latency, which does not vary with slot occupancy, despite a real $512\times$ per-record throughput cost (see text).}
 \end{tabularx}
 \end{table}
 
@@ -1366,9 +1374,13 @@ has no term for auditability and so cannot see the loss of the compliance
 guarantee that removing this component causes. A deployment selecting on
 \HEPI{} alone would be indifferent to removing the component that satisfies
 45 CFR \S164.312(b). Removing SIMD packing, by contrast, is estimated (not
-measured) to cost nearly the entire overhead term of \HEPI{}, consistent with
-Sec.~\ref{sec:ckks-depth}'s finding that batching is what keeps this design's
-already-large per-batch latency from becoming per-record latency; we flag the
+measured) to leave \HEPI{} entirely unchanged, a second and sharper blind
+spot: SIMD is, in prose terms elsewhere in this paper (Sec.~\ref{sec:eval}),
+"the single most consequential design choice for storage and bandwidth
+feasibility" and what keeps this design's already-large per-batch latency
+from becoming a $512\times$ worse per-record latency, yet \HEPI{} as
+formulated cannot see this because its overhead term operates on
+per-circuit, not per-record-delivered, cost; we flag the
 derived nature of this row explicitly rather than present it with the same
 evidentiary weight as the measured rows.
 
@@ -1427,10 +1439,12 @@ weight-dependent throughout and should always be reported with their weights.
 \subsection{Principal Findings}
 
 \framework{} demonstrates that CKKS-based homomorphic inference on clinical
-tabular data incurs \emph{no measurable AUROC cost} relative to plaintext
-evaluation of the identical model on the identical inputs ($0.8622$ vs.\
-$0.8607$), overturning an earlier, unimplemented estimate of this pipeline
-that had assumed a $0.015$-AUROC penalty. The price of that accuracy is paid
+tabular data incurs only a small single-run AUROC difference relative to
+plaintext evaluation of the identical model on the identical inputs
+($0.8622$ vs.\ $0.8607$, a $0.0015$ gap), far smaller than an earlier,
+unimplemented estimate of this pipeline
+that had assumed a $0.015$-AUROC penalty, though the single available run
+does not by itself demonstrate the gap is zero (Sec.~\ref{sec:eval}). The price of that accuracy is paid
 entirely in latency: real CKKS execution is $3.76 \times 10^5\times$ slower
 than plaintext on the same CPU (Sec.~\ref{sec:eval}), four to five orders of
 magnitude beyond what the original design estimate anticipated. \HEPI{}
@@ -1582,7 +1596,11 @@ and the Lee et al.\ proxy show no meaningful, tested separation across the
 entire weight simplex, so at minimum the metric does not manufacture a
 comparative ranking where the underlying single-run measurement supports
 none. More seriously, the ablation study demonstrates that \HEPI{} is blind to
-auditability, so it should be read as summarizing the security-utility-overhead
+auditability and, separately, to per-record batching efficiency (removing
+SIMD packing leaves the composite numerically unchanged despite a real
+$512\times$ per-record throughput cost, Sec.~\ref{sec:eval}, because the
+overhead term is defined on per-circuit rather than per-record-delivered
+latency), so it should be read as summarizing the security-utility-overhead
 trade-off it explicitly encodes and not as a general measure of deployment
 readiness. A related, less visible limitation is that \HEPI{}'s log-scaled
 overhead term is heavily compressive at the overhead magnitudes this paper
@@ -1640,8 +1658,9 @@ mapping does not address computational integrity under a malicious server
 (Sec.~\ref{sec:security}).
 
 We are deliberate about what implementing this system, rather than only
-designing it, actually established. Accuracy under encryption is
-essentially free; latency is not: real CKKS execution measured $3.76 \times
+designing it, actually established. Accuracy under encryption is cheap in
+absolute terms though not demonstrably free given single-run evidence
+(Sec.~\ref{sec:eval}); latency is not: real CKKS execution measured $3.76 \times
 10^5\times$ slower than plaintext on the same CPU, four to five orders of
 magnitude beyond what an unimplemented design estimate had assumed, and
 $n=2^{13}$, one of the three parameter points the original design treated as
