@@ -133,7 +133,7 @@ Artificial intelligence is rapidly transforming clinical medicine, enabling
 diagnostic systems that match or surpass specialist-level performance in tasks
 ranging from radiological image interpretation to early sepsis detection
 \cite{rajpurkar2022ai,topol2023highperformance,esteva2019guide,miotto2018deep,
-chowdhury2023survey,natarajan2023clinicalml}, a trajectory that recent
+chowdhury2023survey}, a trajectory that recent
 work on generative and foundation models in medicine indicates is
 accelerating rather than plateauing~\cite{teo2025genai}.
 However, the deployment of machine learning inference in production healthcare
@@ -366,8 +366,8 @@ outline an HE pipeline for medical image analysis but stop at a feasibility
 study without a deployable audit mechanism. MedCo
 \cite{raisaro2018medco} enables privacy-preserving exploration of distributed
 clinical and genomic data under threshold HE, targeting cohort-level queries
-rather than per-patient diagnostic inference. Batchelor et
-al.~\cite{batchelor2024heml} present an efficient homomorphic evaluation of
+rather than per-patient diagnostic inference. Zuber and
+Sirdey~\cite{zuber2021heknn} present an efficient homomorphic evaluation of
 $k$-NN classifiers, illustrating that non-parametric models remain costly
 under HE relative to the parametric MLP architecture adopted in \framework{}.
 Collectively, these works confirm the feasibility of HE-based clinical
@@ -1372,7 +1372,7 @@ Degree-3 (Lee proxy)\,$^\dagger$ & $0.8623$ & $1{,}002$ ms & $0.830$ & $\approx 
 No SIMD ($\times 512$)\,$^\ddagger$ & $0.8622$ & $\approx 534$ s & $0.830$ & $0.000^\ddagger$ (metric-blind) \\
 No Audit Agent               & 0.8622 & 1{,}043 ms & 0.830 & $0.000$ (metric-blind) \\
 \bottomrule
-\multicolumn{5}{@{}p{0.98\columnwidth}}{\footnotesize $^\dagger$measured; $^\ddagger$derived, not independently run. ``Metric-blind'' rows have a real, substantial cost (a $512\times$ per-record throughput collapse for No SIMD; the loss of a HIPAA-required audit trail for No Audit Agent) that Eq.~1--3 cannot detect, because the overhead term is defined on per-ciphertext circuit latency, not per-record delivered latency, and no term encodes auditability at all; $\Delta\HEPI \approx 0$ here means the metric failed to notice the cost, not that there was none (see text).}
+\multicolumn{5}{@{}p{0.98\columnwidth}}{\footnotesize\raggedright $^\dagger$measured; $^\ddagger$derived, not independently run. ``Metric-blind'' rows carry a real cost ($512\times$ throughput loss for No SIMD; lost audit trail for No Audit Agent) Eq.~1--3 cannot detect: $\Delta\HEPI \approx 0$ means the metric missed the cost, not that there was none (see text).}
 \end{tabularx}
 \end{table}
 
