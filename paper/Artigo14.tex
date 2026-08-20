@@ -87,8 +87,8 @@ statistically negligible, yielding a mean \HEPI{} of 0.830.
 % [Weaker result]
 Measured inference latency is 3.8$\times$10$^5$ higher than plaintext on the
 same CPU, dominated entirely by the multiplicative-depth cost of evaluating
-three homomorphic activation layers rather than by network transfer -- a
-substantially larger overhead than depth-limited HE designs typically
+three homomorphic activation layers rather than by network transfer;
+this is a substantially larger overhead than depth-limited HE designs typically
 report, and large enough that it, not accuracy loss, is the binding
 deployment constraint (Sec.~\ref{sec:discussion}). Because our evaluation
 uses a synthetic cohort rather than the restricted-access MIMIC-III records
@@ -555,7 +555,7 @@ multiplicative depth as a function of polynomial degree.
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}l r r c r@{}}
+\begin{tabularx}{\columnwidth}{@{}l X X c@{}}
 \toprule
 \textbf{Deg.} & $\|\widehat{\sigma}_k - \mathrm{ReLU}\|_\infty$ & \textbf{RMSE} & \textbf{Powers depth} \\
 \midrule
@@ -565,7 +565,7 @@ multiplicative depth as a function of polynomial degree.
 9  & 0.168 & 0.040 & 4 \\
 11 & 0.139 & 0.030 & 4 \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 Values are least-squares fits of a degree-$k$ polynomial to ReLU over a dense
@@ -602,7 +602,7 @@ Testing the three CKKS polynomial-modulus degrees against this requirement
 gives a result an unfit design would not have anticipated: $n=2^{13}$ is
 \emph{infeasible at any activation degree}, since its 128-bit-security modulus
 budget ($\approx 218$ bits) cannot supply enough NTT-friendly primes for even
-the shallowest (degree-3) activation we tested -- SEAL raises \texttt{failed
+the shallowest (degree-3) activation we tested: SEAL raises \texttt{failed
 to find enough qualifying primes} at context-construction time, before any
 computation is attempted. $n=2^{14}$ ($\approx 438$-bit budget) is feasible
 only with the reduced degree-3 activation (13 levels, 344 of the available
@@ -721,8 +721,9 @@ Figure~\ref{fig:algorithm} presents the \framework{} inference algorithm with
 
 \framework{} inherits the IND-CPA security of the underlying CKKS scheme
 under the Ring Learning With Errors (RLWE) hardness assumption
-\cite{peikert2016decade} with parameter $(n, q, \chi)$ where $n = 2^{14}$,
-$q$ is a 438-bit modulus, and $\chi$ is a discrete Gaussian distribution with
+\cite{peikert2016decade} with parameter $(n, q, \chi)$ where $n = 2^{15}$,
+$q$ is a 760-bit modulus (18-prime chain, well under the 881-bit budget for
+this ring degree), and $\chi$ is a discrete Gaussian distribution with
 standard deviation $\sigma = 3.2$.
 This configuration provides $\geq 128$-bit classical security and $\geq 64$-bit
 quantum security according to the Lattice Estimator \cite{albrecht2015concrete}.
@@ -903,9 +904,9 @@ number in this section is exactly reproducible.
 \multirow{5}{*}{\textbf{HE Library}}
   & Library       & Microsoft SEAL 4.1 \cite{seal2024} \\
   & Scheme        & CKKS \\
-  & Poly.\ degree & $n = 2^{14}$ (also $2^{13}, 2^{15}$ in Fig.~\ref{fig:security}) \\
-  & Coeff.\ modulus & 438 bits, 4-level chain \\
-  & Security bits & 128 (classical), 64 (quantum), Lattice Estimator \cite{albrecht2015concrete} \\
+  & Poly.\ degree & $n = 2^{15}$, degree-7 activation (headline results, Sec.~\ref{sec:ckks-depth}) \\
+  & Coeff.\ modulus & 760 of 881 available bits, 18-prime chain (16 usable levels) \\
+  & Security bits & 128 (classical) certified, Lattice Estimator \cite{albrecht2015concrete}; $n=2^{13}$ infeasible, $n=2^{14}$ degree-3 only \\
 \midrule
 \multirow{6}{*}{\textbf{Cohort}}
   & Provenance      & \textbf{Synthetic}, fitted to published MIMIC-III statistics \cite{johnson2016mimic} \\
@@ -952,13 +953,15 @@ set.
 
 \subsection{Agent-Level Results}
 
-\textbf{Encryption Agent:} Mean encryption throughput of $1{,}024 \pm 47$
-records/second (95\% CI: [982, 1066]). A single CKKS ciphertext at $n = 2^{14}$
-with a 438-bit modulus chain occupies $2 \cdot n \cdot \lceil \log_2 q \rceil / 8
-= 1.79$ MB, and carries 512 SIMD-packed records, giving an amortized
-$3.42$ KB per patient record. SIMD packing is thus responsible for a
-$512\times$ reduction in per-record ciphertext expansion relative to
-record-at-a-time encryption, and is the single most consequential design choice
+\textbf{Encryption Agent:} Measured encryption throughput of $130.5$
+records/second, single-threaded, for the 48-feature vector (single real
+measurement, not averaged across runs; Sec.~\ref{sec:ckks-depth}). A single
+CKKS ciphertext at the real $n = 2^{15}$ configuration this paper uses
+occupies $6.858$ MB (measured serialized size), and carries 512
+SIMD-packed records, giving an amortized $13.72$ KB per patient record. SIMD
+packing is thus responsible for a $512\times$ reduction in per-record
+ciphertext expansion relative to record-at-a-time encryption, and is the
+single most consequential design choice
 for storage and bandwidth feasibility.
 
 \textbf{Inference Agent:} Mean inference latency of $534.1 \pm 61.7$ s per
@@ -985,9 +988,9 @@ which a randomly selected past entry was mutated.
 
 \textbf{End-to-end round trip.} With the measured per-batch compute at
 $534.1$ s, network transfer is no longer a meaningful term in the total.
-Transmitting the 1.79 MB input ciphertext over even a modest 100 Mbps link
-costs $144$ ms, and the TLS handshake a further few milliseconds -- together
-under $0.03\%$ of the $534.1$ s compute time. This inverts the conclusion an
+Transmitting the 6.858 MB input ciphertext over even a modest 100 Mbps link
+costs $549$ ms, and the TLS handshake a further few milliseconds: together
+under $0.11\%$ of the $534.1$ s compute time. This inverts the conclusion an
 earlier, unimplemented estimate of this pipeline had reported (that network
 transfer would dominate at low bandwidth): once the real multiplicative-depth
 cost of Sec.~\ref{sec:ckks-depth} is accounted for, homomorphic evaluation
@@ -1013,14 +1016,14 @@ of this pipeline had assumed (a $0.015$ AUROC gap).
 (in-hospital mortality, 11.5\% prevalence). Plaintext and DP-SGD: mean
 $\pm$ SD over 10 independently trained models. \framework{} and Lee et al.:
 single real run of the encrypted pipeline on the same trained model, full
-4{,}228-record test set -- repeated independent CKKS runs were not
+4{,}228-record test set; repeated independent CKKS runs were not
 computationally tractable within this project's compute budget
 (Sec.~\ref{sec:ckks-depth}).}
 \label{tab:auroc}
 \centering
 \small
 \setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{@{}l c c c@{}}
+\begin{tabularx}{\columnwidth}{@{}X c c c@{}}
 \toprule
 \textbf{Method} & \textbf{AUROC} & \textbf{ECE} & \textbf{Accuracy} \\
 \midrule
@@ -1031,14 +1034,14 @@ Lee et al.\ (proxy)~\cite{lee2022privacypreserving} & $0.8623$ & $0.031$ & $89.3
 \textbf{\framework{}} & $\mathbf{0.8622}$ & $\mathbf{0.145}$ & $\mathbf{89.3}$\% \\
 \bottomrule
 \multicolumn{4}{@{}l}{\footnotesize $^{\dagger}$upper bound; DP-SGD at $\epsilon=1.0$ (actual $0.993$), $\delta=10^{-5}$.}
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 Four observations in Table~\ref{tab:auroc} deserve emphasis because they
 would be invisible in an accuracy-only report, or contradict what an
 unimplemented estimate of this pipeline had assumed. First, DP-SGD's AUROC of
 $0.838$ sits meaningfully below plaintext despite both attaining similar
-raw accuracy ($88.8\%$ vs.\ $89.1\%$) -- the $(\epsilon,\delta)$-DP noise
+raw accuracy ($88.8\%$ vs.\ $89.1\%$): the $(\epsilon,\delta)$-DP noise
 degrades ranking quality in a way accuracy alone does not surface, the
 opposite direction of misrepresentation from what accuracy-only reporting
 usually produces, and a reminder that the two metrics answer different
@@ -1050,8 +1053,8 @@ of this pipeline had projected \framework{} exceeding the Lee et al.\ proxy by
 $0.033$ AUROC; the measured result does not support that margin, and we
 report the corrected, honest comparison rather than the design-stage
 projection. \framework{}'s contribution over the Lee et al.\ proxy is
-therefore architectural and regulatory (Table~\ref{tab:related}) -- the
-three-agent audit structure, the compliance mapping, and \HEPI{} itself --
+therefore architectural and regulatory (Table~\ref{tab:related}): the
+three-agent audit structure, the compliance mapping, and \HEPI{} itself,
 not a measured accuracy advantage on this cohort. Third, calibration varies
 widely and non-monotonically with activation degree: Lee et al.'s degree-3
 proxy achieves the \emph{best} calibration of any method measured (ECE
@@ -1118,11 +1121,11 @@ scales as $\lceil B/512 \rceil$ beyond it, with plaintext assumed linear in
 $B$ on a single CPU thread. This figure reports no independently measured
 data point other than $B=512$; we label it as derived rather than present an
 extrapolation with the same evidentiary status as a measurement. The
-qualitative claim it illustrates -- amortized per-record cost improves with
-batch fill, and a sparsely filled batch still pays the full per-ciphertext
-cost (Section~\ref{sec:discussion}) -- follows directly from the measured
-$B=512$ anchor and the SIMD packing design (Sec.~\ref{sec:ckks-depth}), not
-from the extrapolated curve itself.}
+qualitative claim it illustrates, namely that amortized per-record cost
+improves with batch fill and a sparsely filled batch still pays the full
+per-ciphertext cost (Section~\ref{sec:discussion}), follows directly from the
+measured $B=512$ anchor and the SIMD packing design
+(Sec.~\ref{sec:ckks-depth}), not from the extrapolated curve itself.}
 \label{fig:scalability}
 \input{figures/fig6_scalability.tex}
 \end{figure}
@@ -1133,7 +1136,7 @@ Plaintext MLP and DP-SGD were each trained and evaluated across 10
 independent seeds, and their AUROC distributions are well separated: a
 Mann-Whitney $U$ test~\cite{mann1947test} for two independent samples (no
 pairing exists between differently-seeded models) gives $U = 100$,
-$p = 1.8 \times 10^{-4}$ (two-sided), rank-biserial $r = 1.00$ -- every
+$p = 1.8 \times 10^{-4}$ (two-sided), rank-biserial $r = 1.00$: every
 plaintext run outperforms every DP-SGD run, consistent with the
 $0.024$ mean AUROC gap exceeding three pooled standard deviations.
 
@@ -1141,8 +1144,8 @@ We do \emph{not} report a significance test between \framework{} and Lee et
 al., and we state why rather than omit the comparison silently:
 Section~\ref{sec:ckks-depth} explains that each full-test-set run of the real
 CKKS pipeline costs on the order of hours on our available (heavily
-shared) compute, which made 10 independent HE runs -- the replication count
-that supports a Mann-Whitney test for the other two methods -- computationally
+shared) compute, which made 10 independent HE runs, the replication count
+that supports a Mann-Whitney test for the other two methods, computationally
 infeasible within this project. We report $n=1$ real run per HE configuration
 and compare point estimates, not distributions. This is a genuine limitation
 of the evidence, not a presentational choice: a single run cannot rule out
@@ -1157,28 +1160,27 @@ encryption would be warranted.
 
 Table~\ref{tab:ablation} isolates the contribution of each design decision.
 The full configuration scores $\HEPI = 0.830$ (measured; Sec.~\ref{sec:eval}).
-The degree-3 row reuses the Lee et al.\ proxy run of Sec.~\ref{sec:eval} --
+The degree-3 row reuses the Lee et al.\ proxy run of Sec.~\ref{sec:eval},
 identical architecture and CKKS parameters, differing only in activation
-degree -- rather than a separate ablation run, since the two experiments are
+degree, rather than a separate ablation run, since the two experiments are
 the same computation. The no-SIMD row is not independently measured: at the
 per-record cost this section measures, a record-at-a-time re-run of the full
 test set would cost on the order of days of compute on our available
 hardware, so we report the value implied directly by the measured
 architecture (CKKS cost scales with ciphertext count, and SIMD packing is the
-only thing standing between one ciphertext per batch and one per record --
+only thing standing between one ciphertext per batch and one per record,
 Sec.~\ref{sec:ckks-depth}) rather than an independently executed data point,
 and label it as such.
 
 \begin{table}[t]
 \caption{Ablation of \framework{} Design Decisions (full row and degree-3 row:
 measured; no-SIMD row: derived from the measured per-batch cost, not
-independently run -- see text)}
+independently run; see text)}
 \label{tab:ablation}
 \centering
 \small
-\setlength{\tabcolsep}{4pt}
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}l c c c c@{}}
+\begin{tabularx}{\columnwidth}{@{}X c c c c@{}}
 \toprule
 \textbf{Configuration} & \textbf{AUROC} & \textbf{Lat./rec.} & \textbf{\HEPI{}} & $\Delta\HEPI{}$ \\
 \midrule
@@ -1188,14 +1190,14 @@ No SIMD ($\times 512$)\,$^\ddagger$ & $0.8622$ & $\approx 534$ s & $\approx 0.63
 No Audit Agent               & 0.8622 & 1{,}043 ms & 0.830 & $0.000$ \\
 \bottomrule
 \multicolumn{5}{@{}p{0.98\columnwidth}}{\footnotesize $^\dagger$measured; $^\ddagger$derived, not independently run (see text).}
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 The degree-3 row is the most consequential real finding of this ablation, and
 it contradicts what an unimplemented design estimate had assumed. Reducing
-the activation polynomial from degree 7 to degree 3 -- a substantially
+the activation polynomial from degree 7 to degree 3, a substantially
 coarser approximation of ReLU ($L^\infty$ error $0.469$ vs.\ $0.214$,
-Table~\ref{tab:cheb}) -- costs essentially nothing: AUROC changes by
+Table~\ref{tab:cheb}), costs essentially nothing: AUROC changes by
 $+0.0001$ (within noise), latency by only $4\%$ ($1{,}002$ vs.\ $1{,}043$ ms),
 and \HEPI{} by less than $0.0001$. The dominant cost in this architecture is
 the four linear layers (Sec.~\ref{sec:ckks-depth}), not the activation
@@ -1208,7 +1210,7 @@ in preferring degree 3 for its smaller depth budget and easier parameter
 selection (Sec.~\ref{sec:ckks-depth}) at no measured cost.
 
 Disabling the Audit Agent changes neither accuracy nor latency by
-construction -- it is architecturally orthogonal to the forward pass -- and
+construction: it is architecturally orthogonal to the forward pass, and it
 therefore leaves \HEPI{} numerically unchanged. We report this null result
 deliberately: it exposes a genuine limitation of the metric, in that \HEPI{}
 has no term for auditability and so cannot see the loss of the compliance
@@ -1234,15 +1236,15 @@ what Sec.~\ref{sec:eval} already reports at the default weights: the two
 methods are indistinguishable across essentially the entire simplex, not
 one dominating the other. \framework{} scores (nominally) higher in $58$ of
 the $231$ weightings, ties in $1$, and lower in $172$, but every margin in
-the sweep is between $-0.0004$ and $+0.0001$ -- three to four orders of
+the sweep is between $-0.0004$ and $+0.0001$, three to four orders of
 magnitude smaller than either method's own composite value, and consistent
 with the single-run measurement noise both methods carry
 (Sec.~\ref{sec:eval}). An unimplemented design estimate had projected a
 robust $230/231$ win for \framework{}; the measured comparison is a
 statistical tie throughout the weight simplex, and we report that finding
 rather than the earlier projection. This sweep therefore does not answer
-"which HE configuration is better" for this network -- the two are not
-measurably different -- it answers "how sensitive is that non-finding to the
+"which HE configuration is better" for this network, since the two are not
+measurably different; it answers "how sensitive is that non-finding to the
 weight choice," and the answer is: not sensitive, because there is no
 detectable difference to be sensitive to.
 
@@ -1280,7 +1282,7 @@ magnitude beyond what the original design estimate anticipated. \HEPI{}
 reflects this directly: the measured composite is $0.830$, and its
 decomposition assigns the security term its full $0.400$ and the utility term
 $0.399$ of a possible $0.400$, while the overhead term contributes only
-$0.030$ of a possible $0.200$ -- the metric localizes essentially all of the
+$0.030$ of a possible $0.200$: the metric localizes essentially all of the
 real, measured cost of this design in latency, exactly where the systems
 measurements do, and the magnitude of that localization is far more severe
 than the pre-implementation design anticipated.
@@ -1288,18 +1290,20 @@ than the pre-implementation design anticipated.
 \subsection{Operational Cost}
 
 Confidentiality is not free, and the relevant question for a hospital is
-whether the price is payable. Per patient record, \framework{} adds $3.42$ KB
-of ciphertext storage, unchanged from the design estimate since ciphertext
-size depends only on the CKKS parameters. Compute is a different story: at
+whether the price is payable. Per patient record, \framework{} adds $13.72$ KB
+of ciphertext storage, larger than an earlier design estimate ($3.42$ KB) had
+assumed because that estimate was computed for the $n = 2^{14}$ parameter
+set, not the $n = 2^{15}$ configuration the real depth requirement in
+Sec.~\ref{sec:ckks-depth} forces. Compute is a different story: at
 the measured $1{,}043$ ms per record, an institution processing $10{,}000$
 inferences per day requires $2.90$ hours of aggregate homomorphic compute
 using the 8 CPU cores available to us on a heavily shared research cluster
-(Sec.~\ref{sec:ckks-depth}) -- not the $2.8$ s/day an earlier, unimplemented
+(Sec.~\ref{sec:ckks-depth}), not the $2.8$ s/day an earlier, unimplemented
 estimate had assumed, a difference of roughly three orders of magnitude. This
 remains within an overnight batch window on dedicated hardware, and scales
 down roughly linearly with additional parallel cores (our own throughput
 improved when we reduced worker count to better fit available, contended CPU
-capacity -- Sec.~\ref{sec:ckks-depth} -- so the relationship between core
+capacity, Sec.~\ref{sec:ckks-depth}, so the relationship between core
 count and throughput on an uncontended machine remains to be characterized
 precisely), but it is a genuine infrastructure requirement, not the
 negligible background cost the ciphertext-size analysis alone would suggest.
@@ -1324,7 +1328,7 @@ Deployments must therefore aggregate requests into batching windows,
 accepting the induced delay. GPU-accelerated HE libraries such as
 HEAAN~\cite{heaan2024} may reduce the constant factor, and our measurement
 itself used only 8 of the host's cores under heavy contention from other
-tenants on a shared research cluster (Sec.~\ref{sec:ckks-depth}) -- dedicated,
+tenants on a shared research cluster (Sec.~\ref{sec:ckks-depth}); dedicated,
 adequately parallel hardware would very likely reduce wall-clock latency
 substantially, though by how much remains to be measured rather than assumed.
 
@@ -1404,15 +1408,15 @@ testing and should be read as such.
 \label{sec:conclusion}
 
 We presented \framework{}, a three-tier homomorphic encryption framework for
-privacy-compliant healthcare ML inference without data decryption, implemented
-it end to end -- real CKKS encryption and homomorphic inference via Microsoft
-SEAL, not a numerical simulation -- and introduced the \HEPI{} metric for
-principled evaluation of HE-based clinical AI deployments. On a synthetic
-cohort calibrated to published MIMIC-III statistics for in-hospital mortality
-prediction, \framework{} attains an AUROC of $0.8622$ under full CKKS
-encryption against $0.8607$ in plaintext on the same trained model -- a
-statistically negligible gap, meaningfully better than an earlier,
-unimplemented estimate of this pipeline had assumed -- with a measured mean
+privacy-compliant healthcare ML inference without data decryption, and
+implemented it end to end: real CKKS encryption and homomorphic inference via
+Microsoft SEAL, not a numerical simulation. We also introduced the \HEPI{}
+metric for principled evaluation of HE-based clinical AI deployments. On a
+synthetic cohort calibrated to published MIMIC-III statistics for in-hospital
+mortality prediction, \framework{} attains an AUROC of $0.8622$ under full CKKS
+encryption against $0.8607$ in plaintext on the same trained model, a
+statistically negligible gap and meaningfully better than an earlier,
+unimplemented estimate of this pipeline had assumed, with a measured mean
 \HEPI{} of $0.830$. \framework{} and the Lee et al.\ proxy baseline are
 statistically indistinguishable on this measurement ($0.8622$ vs.\ $0.8623$
 AUROC, identical \HEPI{} to four decimal places); \framework{}'s contribution
@@ -1427,8 +1431,8 @@ designing it, actually established. Accuracy under encryption is
 essentially free; latency is not: real CKKS execution measured $3.76 \times
 10^5\times$ slower than plaintext on the same CPU, four to five orders of
 magnitude beyond what an unimplemented design estimate had assumed, and
-$n=2^{13}$ -- one of the three parameter points the original design treated as
-interchangeable -- turned out to be cryptographically infeasible for this
+$n=2^{13}$, one of the three parameter points the original design treated as
+interchangeable, turned out to be cryptographically infeasible for this
 architecture at any activation degree, a finding only implementation
 surfaces (Sec.~\ref{sec:ckks-depth}). The diagnostic-utility results establish
 that the pipeline is internally consistent and reproducible, and quantify the
