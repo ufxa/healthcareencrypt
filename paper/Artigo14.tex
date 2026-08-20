@@ -83,7 +83,7 @@ encryption and homomorphic inference via Microsoft SEAL, not a numerical
 simulation of expected results. On the same trained model evaluated under
 both conditions, \framework{} attains an AUROC of 0.862 (accuracy 89.3\%,
 against an 88.5\% majority-class baseline) under full homomorphic encryption,
-against 0.861 (89.1\%) in plaintext -- a single-run gap of $0.0015$, far
+against 0.861 (89.1\%) in plaintext: a single-run gap of $0.0015$, far
 smaller than the $0.015$ gap an earlier, unimplemented design estimate had
 assumed, yielding a composite \HEPI{} of 0.830. This gap is about $1.6\times$
 the plaintext model's own seed-to-seed training SD ($\pm 0.0009$); we report
@@ -302,7 +302,19 @@ assumption that does not hold in the common single-cloud-provider deployment
 model of most healthcare institutions; Mudannayake et
 al.~\cite{mudannayake2025smpc} survey this broader secure multi-party
 computation landscape and confirm that the multi-party assumption remains a
-structural, not merely historical, limitation of the family. More recently, Liu et
+structural, not merely historical, limitation of the family. Yuan et
+al.~\cite{yuan2025survey} survey the broader approximate-HE-for-ML landscape
+and identify multiplicative-depth budgeting, the exact challenge
+Sec.~\ref{sec:ckks-depth} confronts empirically rather than by assumption, as
+the field's dominant open engineering problem. Buchanan and
+Ali~\cite{buchanan2025svm} evaluate HE-encrypted SVM training and report
+similarly severe overhead for non-linear kernels, corroborating this paper's
+finding that multiplicative depth, not any single layer type, is what drives
+HE latency. Hendaoui et al.~\cite{hendaoui2025epad} apply HE to anomaly
+detection rather than per-patient diagnostic inference, illustrating that the
+SIMD-batching and audit-trail design choices \framework{} makes are specific
+to this paper's diagnostic-inference setting and do not transfer unmodified
+to aggregate anomaly-scoring workloads. More recently, Liu et
 al.~\cite{liu2024privacy} propose a general HE-and-neural-network privacy
 protection strategy, and Joo et al.~\cite{joo2025keyset} optimize the
 rotation-key set required for CKKS-encrypted neural network inference,
@@ -1154,7 +1166,7 @@ trained model evaluated under both conditions, \framework{} attains an AUROC
 of $0.8622$ under full homomorphic encryption against $0.8607$ in plaintext
 for that specific model (training seed $42$, the first of the ten seeds in
 Table~\ref{tab:setup}; the ten-seed plaintext mean reported in
-Table~\ref{tab:auroc} is $0.8615 \pm 0.0009$) -- a $+0.0015$ difference. We
+Table~\ref{tab:auroc} is $0.8615 \pm 0.0009$), a $+0.0015$ difference. We
 report this gap as a single-run comparison, not a statistically tested one:
 the $\pm 0.0009$ SD characterizes cross-seed \emph{training} variance among
 ten independently trained plaintext models, a different random process from

@@ -1,5 +1,5 @@
 % Figure 6 — Inference Latency vs Batch Size (DERIVED, not independently
-% measured at each size -- see caption in Artigo14.tex). Anchored to the
+% measured at each size: see caption in Artigo14.tex). Anchored to the
 % single real measurement at B=512 for each method (Sec. VI), extrapolated
 % via the measured architectural property that CKKS cost is flat for
 % B<=512 (one ciphertext regardless of slot fill) and scales as
@@ -28,7 +28,7 @@
   grid=major,
   grid style={dashed, gray!30},
 ]
-% HE-MedInfer -- flat at the measured 534,100 ms for B<=512, then
+% HE-MedInfer, flat at the measured 534,100 ms for B<=512, then
 % ceil(B/512) x that value (only ciphertext count increases)
 \addplot+[mark=square*, blue, thick]
   coordinates {
@@ -42,7 +42,7 @@
   };
 \addlegendentry{\framework{} (derived)}
 
-% Lee et al. proxy -- flat at the measured 513,000 ms for B<=512
+% Lee et al. proxy, flat at the measured 513,000 ms for B<=512
 \addplot+[mark=triangle*, red!70, dashed]
   coordinates {
     (64,    513000)
@@ -55,7 +55,7 @@
   };
 \addlegendentry{Lee et al.\ proxy (derived)}
 
-% Plaintext MLP -- linear extrapolation from the measured 1.42 ms at B=512
+% Plaintext MLP, linear extrapolation from the measured 1.42 ms at B=512
 % (single CPU thread)
 \addplot+[mark=*, green!60!black, dotted]
   coordinates {
