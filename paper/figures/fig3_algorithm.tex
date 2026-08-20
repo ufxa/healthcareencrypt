@@ -11,8 +11,9 @@
 \caption{\framework{}: Encrypted Submission, Homomorphic Inference, and Audit
   Verification. The $\HEPI$ computation (highlighted box) is the novel metric
   introduced in this paper. Complexity: encryption $O(d\log n)$; inference
-  $O(d\cdot L\cdot n\log n)$; audit $O(1)$. (Simulation-based evaluation; see
-  Section~\ref{sec:eval}.)}
+  $O(d\cdot L\cdot n\log n)$; audit $O(1)$. This pseudocode describes the
+  general algorithm; Section~\ref{sec:eval} reports real, executed CKKS
+  measurements against it, not a simulation.}
 \label{fig:algorithm}
 
 \Input{Clinical feature vector $x \in \mathbb{R}^d$; CKKS keys $(pk, sk, evk)$;
@@ -27,7 +28,7 @@ $x_{\text{norm}} \leftarrow \textsc{Normalize}(x,\, [-1,1])$\;
 $\{x_1,\dots,x_k\} \leftarrow \textsc{SIMD-Pack}(x_{\text{norm}},\, \texttt{slot\_count})$
   \Comment{batch 512 records/ciphertext}\;
 $\mathbf{ct} \leftarrow \Enc_{pk}(x_{\text{norm}})$
-  \Comment{CKKS encryption, $n=2^{14}$, 128-bit security}\;
+  \Comment{CKKS encryption, $n=2^{15}$, 128-bit security}\;
 $\mathsf{com} \leftarrow H(\mathbf{ct} \,\|\, \tau_{\text{submit}})$
   \Comment{audit commitment}\;
 

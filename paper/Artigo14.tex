@@ -188,8 +188,10 @@ This paper makes the following contributions:
 
   \item We provide a formal compliance mapping of \framework{} against HIPAA
     Security Rule, GDPR Article 25 (data protection by design), and NIST
-    SP 800-111, demonstrating that the framework satisfies all principal
-    regulatory controls for encrypted health data processing.
+    SP 800-175B, demonstrating that the framework satisfies the principal
+    confidentiality-related technical safeguards for encrypted health data
+    processing, though not the Integrity Controls safeguard, which remains
+    an open problem for this class of system (Sec.~\ref{sec:security}).
 
   \item We evaluate \framework{} on a fully specified synthetic clinical
     cohort calibrated to published MIMIC-III~\cite{johnson2016mimic} summary
@@ -1560,10 +1562,19 @@ measures: the framework's own $3.76 \times 10^5\times$ latency overhead,
 which Sec.~\ref{sec:discussion} calls the binding deployment constraint,
 costs only $0.030$ of the term's possible $0.200$ (Sec.~\ref{sec:discussion}),
 so a catastrophic, deployment-disqualifying latency still yields a
-superficially high composite score. \HEPI{} also does not specify a
-deployment-decision threshold; we report it as a diagnostic decomposition of
-where a design's cost falls, not as a scalar a reader should threshold
-against to certify deployment readiness.
+superficially high composite score. This is not merely a hypothetical
+failure mode: Fig.~\ref{fig:algorithm}'s default decision rule gates
+deployment on $\HEPI(\hat{\Mod}) \geq \tau_{\HEPI}$ with $\tau_{\HEPI} =
+0.70$, and the measured $\HEPI = 0.830$ clears that threshold, so the
+framework's own default rule would issue a "Confirmed" deployment-readiness
+verdict for a system this paper's own Discussion (Sec.~\ref{sec:discussion})
+and Limitations (Sec.~\ref{sec:discussion}) call unsuitable for real-time or
+even same-hour clinical use. We view this as a genuine defect of the metric
+as currently weighted and thresholded, not a result to be defended: \HEPI{}
+should be read as a diagnostic decomposition of where a design's cost falls,
+and its default threshold should not be relied upon to certify deployment
+readiness without an operator first reweighting $\beta$ to reflect how much
+latency actually matters for their use case.
 
 \textit{Conclusion validity.} With 10 runs per arm and complete separation
 between the two distributions ($r = 1.00$), the Mann-Whitney result is not in
