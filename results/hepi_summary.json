@@ -1,6 +1,22 @@
 {
   "rows": [
     {
+      "method": "HE-MedInfer (n=2^15, deg=7)",
+      "auroc": 0.8621619400368196,
+      "accuracy": 0.8928571428571429,
+      "latency_ms": 534103.8341257307,
+      "lambda_bits": 128.0,
+      "hepi": 0.8250900703604835
+    },
+    {
+      "method": "Lee et al. proxy (n=2^15, deg=3)",
+      "auroc": 0.8623230253353205,
+      "accuracy": 0.8926206244087039,
+      "latency_ms": 513021.4480823941,
+      "lambda_bits": 128.0,
+      "hepi": 0.8250718909917869
+    },
+    {
       "method": "DP-SGD (non-HE)",
       "auroc": 0.8379822148680635,
       "accuracy": 0.8875354777672658,

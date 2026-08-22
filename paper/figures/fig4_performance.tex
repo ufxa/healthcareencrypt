@@ -1,4 +1,4 @@
-% Figure 4 — Diagnostic Accuracy Comparison (pgfplots bar chart)
+% Figure 4 -- Diagnostic Accuracy Comparison (pgfplots bar chart)
 \begin{tikzpicture}
 \begin{axis}[
   ybar,
@@ -22,10 +22,15 @@
   grid=major,
   grid style={dashed, gray!30},
 ]
+% Error bars are 95% CI half-widths (t-distribution, df=9) computed from the
+% 10 real per-seed accuracy values in results/plaintext.json and
+% results/dpsgd.json; Lee et al. (proxy) and HE-MedInfer are single real
+% runs with no replication, so no CI can be computed without fabrication --
+% they are plotted with zero-width bars, per the caption's disclosure.
 \addplot+[fill=gray!30, error bars/.cd, y dir=both, y explicit]
   coordinates {
-    (Plaintext MLP,  89.1) +- (0,0.2)
-    (DP-SGD,         88.8) +- (0,0.2)
+    (Plaintext MLP,  89.06) +- (0,0.11)
+    (DP-SGD,         88.75) +- (0,0.11)
     (Lee et al.,     89.3) +- (0,0)
     (HE-MedInfer,    89.3) +- (0,0)
   };

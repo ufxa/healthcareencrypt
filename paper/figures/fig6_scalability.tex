@@ -1,12 +1,12 @@
-% Figure 6 — Inference Latency vs Batch Size (DERIVED, not independently
+% Figure 6 -- Inference Latency vs Batch Size (DERIVED, not independently
 % measured at each size: see caption in Artigo14.tex). Anchored to the
 % single real measurement at B=512 for each method (Sec. VI), extrapolated
 % via the measured architectural property that CKKS cost is flat for
 % B<=512 (one ciphertext regardless of slot fill) and scales as
-% ceil(B/512) for B>512; plaintext is assumed to scale linearly with B on
-% a single CPU thread. Log-y axis: the real B=512 anchors span 534,100 ms
-% (HE-MedInfer) down to 1.42 ms (plaintext), a ~5.6-decade range. (Distinct
-% from the paper's "four to five orders of magnitude" phrase, which
+% ceil(B/512) for B>512; plaintext is assumed to scale linearly with B,
+% GPU-batched (Sec. VI). Log-y axis: the real B=512 anchors span 534,100 ms
+% (HE-MedInfer) down to 0.0722 ms (plaintext), a ~6.9-decade range. (Distinct
+% from the paper's "five to six orders of magnitude" phrase, which
 % describes the gap between this measured overhead and an earlier design
 % estimate, not this raw ratio.)
 \begin{tikzpicture}
@@ -55,17 +55,17 @@
   };
 \addlegendentry{Lee et al.\ proxy (derived)}
 
-% Plaintext MLP, linear extrapolation from the measured 1.42 ms at B=512
-% (single CPU thread)
+% Plaintext MLP, linear extrapolation from the measured 0.0722 ms at B=512
+% (GPU-batched, seed 42)
 \addplot+[mark=*, green!60!black, dotted]
   coordinates {
-    (64,   0.178)
-    (128,  0.355)
-    (256,  0.710)
-    (512,  1.42)
-    (1024, 2.84)
-    (2048, 5.68)
-    (4096, 11.36)
+    (64,   0.009026)
+    (128,  0.018052)
+    (256,  0.036104)
+    (512,  0.072209)
+    (1024, 0.144417)
+    (2048, 0.288834)
+    (4096, 0.577669)
   };
 \addlegendentry{Plaintext MLP (derived)}
 

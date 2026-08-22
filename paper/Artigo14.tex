@@ -36,17 +36,16 @@
 \begin{document}
 
 \title{Homomorphic Encryption-Enabled Secure Machine Learning Inference for
-       Privacy-Compliant Healthcare Diagnostics Without Data Decryption}
+       Privacy-Preserving Healthcare Diagnostics Without Inference-Time Data Decryption}
 
-\author{Allan~Douglas~Costa,~\IEEEmembership{Member,~IEEE}%
-\thanks{A.~D.~Costa is with the Federal Rural University of the Amazon (UFRA),
-Institute of Computing and Information and Communication Technology (ICIBE),
-Bel\'{e}m, Par\'{a}, Brazil.
-E-mail: allan.costa@ufra.edu.br | ORCID: 0000-0002-7068-8889}%
+\author{Anonymous Author(s)%
+\thanks{Author identity and affiliation withheld for double-blind review;
+will be inserted upon acceptance.}%
 \thanks{Reproducibility: the \framework{} reference implementation, the
 synthetic data generator, and all scripts required to regenerate every figure
-and table in this paper are released under the MIT license at
-\url{https://github.com/ufxa/healthcareencrypt}.}}
+and table in this paper are released under the MIT license; the repository
+URL is withheld for double-blind review and will be provided upon
+acceptance.}}
 
 \markboth{IEEE Transactions on Dependable and Secure Computing}{}
 
@@ -85,14 +84,15 @@ both conditions, \framework{} attains an AUROC of 0.862 (accuracy 89.3\%,
 against an 88.5\% majority-class baseline) under full homomorphic encryption,
 against 0.861 (89.1\%) in plaintext: a single-run gap of $0.0015$, far
 smaller than the $0.015$ gap an earlier, unimplemented design estimate had
-assumed, yielding a composite \HEPI{} of 0.830. This gap is about $1.6\times$
+assumed, yielding a composite \HEPI{} of 0.825. This gap is about $1.6\times$
 the plaintext model's own seed-to-seed training SD ($\pm 0.0009$); we report
 it as a small, favorable single-run result, not as proof of zero cost, since
 only replicated encrypted runs, computationally infeasible within this
 project's compute budget, could establish that formally.
 % [Weaker result]
-Measured inference latency is 3.8$\times$10$^5$ higher than plaintext on the
-same CPU: this, not accuracy loss, is the binding deployment constraint
+Measured inference latency is 7.4$\times$10$^6$ higher than plaintext on the
+same architecture (plaintext measured on GPU, HE on CPU, since SEAL is
+CPU-only; Sec.~\ref{sec:eval}): this, not accuracy loss, is the binding deployment constraint
 (Sec.~\ref{sec:discussion}), and is a substantially larger overhead than
 depth-limited HE designs typically report. It is dominated by the
 multiplicative-depth cost of the full evaluation circuit rather than by
@@ -132,7 +132,7 @@ HE Privacy Index.
 Artificial intelligence is rapidly transforming clinical medicine, enabling
 diagnostic systems that match or surpass specialist-level performance in tasks
 ranging from radiological image interpretation to early sepsis detection
-\cite{rajpurkar2022ai,topol2023highperformance,esteva2019guide,miotto2018deep,
+\cite{rajpurkar2022ai,topol2019highperformance,esteva2019guide,miotto2018deep,
 chowdhury2023survey}, a trajectory that recent
 work on generative and foundation models in medicine indicates is
 accelerating rather than plateauing~\cite{teo2025genai}.
@@ -140,7 +140,7 @@ However, the deployment of machine learning inference in production healthcare
 environments requires that patient data traverse untrusted computational
 infrastructure, including cloud platforms, third-party APIs, and shared
 hospital networks, creating substantial privacy risks
-\cite{price2019privacy,chen2024ehr}. Multi-institutional deployments of
+\cite{price2019privacy,chen2019ehr}. Multi-institutional deployments of
 diagnostic AI further compound this risk, as model training and inference
 pipelines routinely aggregate imaging and tabular records across
 administratively independent hospitals \cite{kaissis2021endtoend}.
@@ -281,70 +281,117 @@ a mixed-protocol framework combining secret sharing and HE for privacy-preservin
 logistic regression and neural network training. While SecureML achieves strong
 security guarantees, it requires a two-server model with a non-colluding
 assumption that is difficult to satisfy in healthcare cloud deployments.
+
 CryptoNets \cite{gilad2016cryptonets} pioneered HE-based neural network
 inference, achieving 98.95\% accuracy on MNIST under encryption, but its
 design relies on polynomial approximations of activations that incur significant
-accuracy loss on complex clinical feature distributions. Boemer et
-al.~\cite{boemer2020mp2ml} propose MP2ML, a mixed-protocol framework combining
+accuracy loss on complex clinical feature distributions.
+
+Boemer et al.~\cite{boemer2020mp2ml} propose MP2ML, a mixed-protocol framework combining
 HE with garbled circuits for non-polynomial activations, reducing accuracy
 loss relative to pure polynomial approximation, but at the cost of an
 interactive multi-round protocol that is incompatible with our non-interactive,
-single-round-trip inference requirement. PEGASUS
-\cite{lu2024private} bridges polynomial and non-polynomial HE evaluation via
+single-round-trip inference requirement.
+
+PEGASUS
+\cite{lu2021pegasus} bridges polynomial and non-polynomial HE evaluation via
 efficient ciphertext-to-ciphertext bootstrapping, improving activation
 accuracy, yet its evaluation targets generic benchmark models rather than
 clinical tabular data and does not report a compliance-oriented metric.
-Generic secure-computation frameworks such as PySyft
-\cite{ryffel2018generic} and FALCON \cite{wagh2020falcon} extend
-privacy-preserving inference to honest-majority multi-party settings, but
-both assume the presence of multiple independent computing parties, an
-assumption that does not hold in the common single-cloud-provider deployment
-model of most healthcare institutions; Mudannayake et
+
+PySyft \cite{ryffel2018generic} extends privacy-preserving inference to
+honest-majority multi-party settings via a generic secure-computation
+framework, but assumes the presence of multiple independent computing
+parties, an assumption that does not hold in the common single-cloud-provider
+deployment model of most healthcare institutions.
+
+FALCON \cite{wagh2020falcon} similarly targets honest-majority three-party
+secure computation for neural network training and inference, sharing
+PySyft's multi-party assumption and the same incompatibility with
+single-cloud-provider healthcare deployments.
+
+Mudannayake et
 al.~\cite{mudannayake2025smpc} survey this broader secure multi-party
-computation landscape and confirm that the multi-party assumption remains a
-structural, not merely historical, limitation of the family. Yuan et
+computation landscape and confirm that the multi-party assumption underlying
+frameworks such as PySyft and FALCON remains a structural, not merely
+historical, limitation of the family.
+
+Yuan et
 al.~\cite{yuan2025survey} survey the broader approximate-HE-for-ML landscape
 and identify multiplicative-depth budgeting, the exact challenge
 Sec.~\ref{sec:ckks-depth} confronts empirically rather than by assumption, as
-the field's dominant open engineering problem. Buchanan and
+the field's dominant open engineering problem.
+
+Buchanan and
 Ali~\cite{buchanan2025svm} evaluate HE-encrypted SVM training and report
 similarly severe overhead for non-linear kernels, corroborating this paper's
 finding that multiplicative depth, not any single layer type, is what drives
-HE latency. Hendaoui et al.~\cite{hendaoui2025epad} apply HE to anomaly
+HE latency.
+
+Hendaoui et al.~\cite{hendaoui2025epad} apply HE to anomaly
 detection rather than per-patient diagnostic inference, illustrating that the
 SIMD-batching and audit-trail design choices \framework{} makes are specific
 to this paper's diagnostic-inference setting and do not transfer unmodified
-to aggregate anomaly-scoring workloads. More recently, Liu et
+to aggregate anomaly-scoring workloads.
+
+More recently, Liu et
 al.~\cite{liu2024privacy} propose a general HE-and-neural-network privacy
-protection strategy, and Joo et al.~\cite{joo2025keyset} optimize the
+protection strategy; like the works above, it neither targets a clinical
+dataset nor reports a security-latency composite metric.
+
+Joo et al.~\cite{joo2025keyset} optimize the
 rotation-key set required for CKKS-encrypted neural network inference,
 reporting substantial reductions in rotation-key generation and evaluation
-time; neither targets a clinical dataset or reports a security-latency
-composite, and \framework{}'s batch-in-slots SIMD design avoids Galois
+time; \framework{}'s batch-in-slots SIMD design avoids Galois
 rotations entirely (Sec.~\ref{sec:ckks-depth}), sidestepping the specific
-cost their keyset optimization addresses.
+cost their keyset optimization addresses, and, like Liu et al., their
+evaluation does not target a clinical dataset.
 
 \subsection{Federated Learning for Healthcare}
 
 Federated learning (FL) reduces data exposure by training models locally and
 aggregating gradients, but gradients remain susceptible to reconstruction
-attacks \cite{zhu2023securehealth}, and communication overhead and
+attacks \cite{zhu2022securehealth}, and communication overhead and
 inference-time privacy remain open challenges beyond the training phase
-itself. Combining FL with HE addresses part of this
-gap: POSEIDON \cite{sav2021poseidon} demonstrates privacy-preserving federated
+itself. Combining FL with HE addresses part of this gap, and a growing body
+of work explores that combination.
+
+POSEIDON \cite{sav2021poseidon} demonstrates privacy-preserving federated
 neural network learning across clinical institutions via lattice-based HE,
-while Froelicher et al.~\cite{froelicher2021scalable} show scalable distributed
-learning under threshold HE, and Ma et al.~\cite{ma2022federated} propose a
+but, like the works below, it requires a federation of independent
+institutions rather than the single-institution deployment \framework{}
+targets.
+
+Froelicher et al.~\cite{froelicher2021scalable} show scalable distributed
+learning under threshold HE, sharing POSEIDON's multi-institution federation
+requirement.
+
+Ma et al.~\cite{ma2022federated} propose a
 multi-key HE scheme that avoids a single trusted key holder in federated
-aggregation; Shen et al.~\cite{shen2024multikey} extend this line with a more
-flexible multi-key FHE aggregation protocol, though both still require a
-federation of independent institutions rather than the single-institution
-deployment \framework{} targets. Xu et al.~\cite{xu2019hybridalpha} combine functional encryption
-with differential privacy in HybridAlpha, and Chang et
+aggregation, addressing a different concern (key custody) than
+\framework{}'s single-institution threat model requires.
+
+Shen et al.~\cite{shen2024multikey} extend this line with a more
+flexible multi-key FHE aggregation protocol, but, like Ma et al., still
+assumes a federation of independent institutions rather than \framework{}'s
+single-institution deployment.
+
+Xu et al.~\cite{xu2019hybridalpha} combine functional encryption
+with differential privacy in HybridAlpha, targeting training-time gradient
+privacy rather than \framework{}'s inference-time ciphertext confidentiality.
+
+Chang et
 al.~\cite{chang2023functionalfl} revisit functional-encryption-based FL
-to reduce per-round key management cost. VerifyNet \cite{xu2024heprivacy}
+to reduce per-round key management cost, again addressing training-time
+overhead rather than inference-time deployment.
+
+VerifyNet \cite{xu2020verifynet}
 adds verifiability guarantees to federated aggregation but assumes an
-honest majority of participating institutions. None of these works addresses
+honest majority of participating institutions, an assumption incompatible
+with \framework{}'s single-institution, single-cloud-provider deployment
+model.
+
+None of these works addresses
 inference-time encryption (as opposed to training-time) in a
 compliance-aware, single-institution deployment framework, which is the
 scenario \framework{} targets.
@@ -352,34 +399,49 @@ scenario \framework{} targets.
 \subsection{Homomorphic Encryption in Clinical Applications}
 
 A smaller body of work applies HE directly to clinical prediction tasks, and
-recent work has continued to grow this space. Haq et
+recent work has continued to grow this space.
+
+Haq et
 al.~\cite{haq2025tabular} evaluate CKKS-based inference for logistic
 regression, SVM, and a lightweight MLP directly on medical tabular data,
 reporting hybrid LR-MLP and SVM-MLP variants intended to accelerate
 convergence; their evaluation targets classification accuracy rather than a
 joint security-latency-compliance metric, and does not address auditability.
+
 Naresh and Reddi~\cite{naresh2025heart} apply FHE-driven logistic regression
 to heart disease prediction, matching plaintext accuracy but, like Haq et
 al., without a compliance mapping or multi-agent audit structure.
+
 Bhattacharjee et al.~\cite{bhattacharjee2025fedhealthcare} combine federated
 learning with lightweight additive HE in FedHealthcare, which reduces
 per-round computational cost relative to full CKKS but requires aggregated
 values to be decrypted at the federation server, a partial-decryption
 exposure that \framework{}'s design avoids by keeping the Inference Server
-fully key-blind throughout. Kim et al.~\cite{kim2018logreg} implement HE-based logistic regression for
+fully key-blind throughout.
+
+Kim et al.~\cite{kim2018logreg} implement HE-based logistic regression for
 clinical risk scoring, reporting practical runtimes for linear models but not
-extending their approach to deep architectures. Vizitiu et
-al.~\cite{vizitiu2021applying} apply HE to deep neural networks over medical
+extending their approach to deep architectures.
+
+Vizitiu et
+al.~\cite{vizitiu2020applying} apply HE to deep neural networks over medical
 imaging features, observing accuracy degradation comparable to the gap we
-report for tabular data. Kocabas and Soyata~\cite{kocabas2015medcloud}
+report for tabular data.
+
+Kocabas and Soyata~\cite{kocabas2015medcloud}
 outline an HE pipeline for medical cloud computing but stop at a feasibility
-study without a deployable audit mechanism. MedCo
+study without a deployable audit mechanism.
+
+MedCo
 \cite{raisaro2018medco} enables privacy-preserving exploration of distributed
 clinical and genomic data under threshold HE, targeting cohort-level queries
-rather than per-patient diagnostic inference. Zuber and
+rather than per-patient diagnostic inference.
+
+Zuber and
 Sirdey~\cite{zuber2021heknn} present an efficient homomorphic evaluation of
 $k$-NN classifiers, illustrating that non-parametric models remain costly
 under HE relative to the parametric MLP architecture adopted in \framework{}.
+
 Collectively, these works confirm the feasibility of HE-based clinical
 inference but leave open the joint treatment of regulatory compliance,
 multi-agent auditability, and a principled trade-off metric, which is the
@@ -407,7 +469,7 @@ literature; we include them for completeness and transparency about what
 distinguishes \framework{} structurally, not to imply they are requirements
 this comparison set was expected to satisfy.
 
-\begin{table*}[t]
+\begin{table*}[!t]
 \caption{Comparison of Related Privacy-Preserving Inference Approaches}
 \label{tab:related}
 \setlength{\tabcolsep}{4pt}
@@ -415,7 +477,7 @@ this comparison set was expected to satisfy.
 \toprule
 \textbf{Work} & \textbf{Scheme} & \textbf{Clinical Data} & \textbf{No Partial Decrypt} & \textbf{3-Agent} & \textbf{Compliance Map} & \textbf{Novel Metric} & \textbf{Year} \\
 \midrule
-Lee et al.~\cite{lee2022privacypreserving} (baseline) & CKKS & \checkno & \checkyes & \checkno & \checkno & \checkno & 2022 \\
+\textbf{Lee et al.}~\cite{lee2022privacypreserving} \textbf{(baseline)} & \textbf{CKKS} & \checkno & \checkyes & \checkno & \checkno & \checkno & \textbf{2022} \\
 Joo et al.~\cite{joo2025keyset}            & CKKS & \checkno & \checkyes & \checkno & \checkno & \checkno & 2025 \\
 Haq et al.~\cite{haq2025tabular}           & CKKS & \checkyes & \checkyes & \checkno & \checkno & \checkno & 2025 \\
 Naresh and Reddi~\cite{naresh2025heart}    & FHE  & \checkyes & \checkyes & \checkno & \checkno & \checkno & 2025 \\
@@ -426,7 +488,7 @@ POSEIDON~\cite{sav2021poseidon}            & LHE  & \checkno & \checkyes & \chec
 SecureML~\cite{mohassel2017secureml}       & HE+SS & \checkno & \checkno  & \checkno & \checkno & \checkno & 2017 \\
 Wood et al.~\cite{wood2020homomorphic}     & Survey & \checkyes & N/A      & \checkno & \checkno & \checkno & 2020 \\
 Kim et al.~\cite{kim2018logreg}              & CKKS & \checkyes & \checkyes & \checkno & \checkno & \checkno & 2018 \\
-Vizitiu et al.~\cite{vizitiu2021applying}  & MORE & \checkyes & \checkyes & \checkno & \checkno & \checkno & 2020 \\
+Vizitiu et al.~\cite{vizitiu2020applying}  & MORE & \checkyes & \checkyes & \checkno & \checkno & \checkno & 2020 \\
 MedCo~\cite{raisaro2018medco}              & Threshold & \checkyes & \checkyes & \checkno & \checkno & \checkno & 2018 \\
 \midrule
 \textbf{\framework{} (ours)}               & \textbf{CKKS} & \textbf{\checkyes} & \textbf{\checkyes} & \textbf{\checkyes} & \textbf{\checkyes} & \textbf{\HEPI{}} & \textbf{2026} \\
@@ -524,10 +586,18 @@ security level normalized against the deployment target:
   \label{eq:ssec}
 \end{equation}
 where $\lambda(n, q, \chi)$ is the number of bits of classical security of the
-RLWE instance underlying the chosen CKKS parameter set, obtained from the
-Lattice Estimator~\cite{albrecht2015concrete} under the primal-uSVP and dual
-attack models, taking the minimum over both. We stress that $\lambda$ is a
-property of the \emph{parameter set}, not of an individual ciphertext. An
+RLWE instance underlying the chosen CKKS parameter set. Rather than re-running
+the Lattice Estimator~\cite{albrecht2015concrete} (a Sage-based dependency
+this repository does not vendor) for every reported configuration, our
+implementation certifies $\lambda \geq 128$ by looking up the modulus-budget
+headroom against the published HomomorphicEncryption.org/SEAL standard
+128-bit-security threshold table for each polynomial-modulus degree, the same
+table on which the Lattice Estimator's primal-uSVP/dual-attack analysis is
+itself based and against which SEAL validates its own parameters. This
+certifies \emph{at least} 128-bit security rather than computing an exact
+continuous bit count, a deliberate, disclosed simplification. We stress that
+$\lambda$ is a property of the \emph{parameter set}, not of an individual
+ciphertext. An
 earlier formulation of this metric derived $S_{\mathrm{sec}}$ from the residual
 CKKS noise budget; we deliberately abandoned that choice, because the noise
 budget measures remaining multiplicative depth before decryption failure and
@@ -595,7 +665,7 @@ for compliance verification.
 
 Figure~\ref{fig:overview} presents the high-level architecture.
 
-\begin{figure*}[t]
+\begin{figure*}[!t]
 \centering
 \caption{\framework{} architecture. Patient data is encrypted at the Data Owner
 side (Encryption Tier) using CKKS, forwarded to the Inference Server (Inference
@@ -628,7 +698,7 @@ $[-5, 5]$, which covers $99.7\%$ of observed pre-activation values after input
 normalization. Table~\ref{tab:cheb} reports the approximation error and
 multiplicative depth as a function of polynomial degree.
 
-\begin{table}[t]
+\begin{table}[!t]
 \caption{Chebyshev Approximation of ReLU over $[-5,5]$}
 \label{tab:cheb}
 \centering
@@ -684,9 +754,14 @@ activation degree, and Microsoft SEAL implements no CKKS bootstrapping
 this budget must be met by the parameter set alone. Bootstrapping-capable
 toolchains exist and would relax this constraint: Ju et
 al.~\cite{ju2024neujeans} jointly optimize convolution and FHE bootstrapping
-to sustain deep encrypted CNN inference at fixed parameters, at the cost of
-the substantially heavier engineering and per-bootstrap latency that
-motivated our own no-bootstrapping, parameter-budgeted design; adopting a
+to sustain deep encrypted CNN inference at fixed parameters, and Pirillo and
+Colombo~\cite{pirillo2026reboot} apply CKKS bootstrapping to encrypted
+\emph{training} rather than inference, reporting that bootstrap placement,
+not bootstrap cost alone, is the dominant lever on end-to-end overhead, a
+finding consistent with this section's own conclusion that depth budgeting,
+not any single operator, is what determines feasibility here; both come at
+the cost of the substantially heavier engineering and per-bootstrap latency
+that motivated our own no-bootstrapping, parameter-budgeted design; adopting a
 bootstrapping toolchain is the natural way a future version of \framework{}
 could decouple network depth from the $n=2^{13}$/$n=2^{14}$ infeasibility
 this section reports.
@@ -710,7 +785,23 @@ This is standard, textbook leveled-HE behavior, not a defect in SEAL: a
 leveled scheme without bootstrapping has a hard multiplicative-depth ceiling
 set by the modulus chain, and SEAL correctly refused to construct an insecure
 or infeasible parameter set rather than silently degrading security or
-producing corrupted output. We report it because the original design of this
+producing corrupted output. Gao and Yates~\cite{gao2025leveledhe} formalize
+exactly this depth-versus-modulus-chain relationship for the HE standard
+more generally, which is the closed-form statement of the constraint this
+section instead discovered empirically by exhausting SEAL's own admission
+check; had that formalization been consulted at design time rather than
+after implementation, the $n=2^{13}$ infeasibility below could have been
+derived analytically instead of discovered by a failed context construction.
+Wan et al.'s CipherAPR~\cite{wan2026cipherapr} takes the complementary
+approach of varying polynomial degree per layer, guided by each layer's
+importance to the final output, to fit a tighter depth budget rather than
+using our single fixed degree-7 approximation throughout; we did not adopt
+a mixed-degree design here, and Sec.~\ref{sec:eval}'s ablation finding, that
+reducing our own uniform degree-7 activation to degree-3 costs almost
+nothing in this architecture because the linear layers dominate depth, not
+the activations, suggests the potential benefit of a mixed-degree approach
+may be smaller for this specific network than for the convolutional models
+CipherAPR targets. We report it because the original design of this
 paper assumed all three configurations were viable data points for a
 security-level sweep (Figure~\ref{fig:security}); the corrected, measured
 finding is that only $n=2^{14}$ (degree-3) and $n=2^{15}$ (degree-7) exist as
@@ -724,7 +815,15 @@ with HIPAA audit control requirements (45 CFR \S164.312(b)). Each log entry is
 the tuple $(\mathsf{com}, H(\mathbf{ct}(y)), \tau_{\mathrm{submit}},
 \tau_{\mathrm{complete}}, \mathrm{id}_{\Mod})$, chained as
 $h_i = H(h_{i-1} \| \mathsf{entry}_i)$ so that any retroactive modification of
-a past inference event invalidates every subsequent digest.
+a past inference event invalidates every subsequent digest. Note that hashing
+$\mathbf{ct}(y)$ for this log entry requires no secret-key material: in the
+evaluated baseline configuration, the AA is co-located within the Data
+Owner's trust boundary (Sec.~\ref{sec:ka}) but does \emph{not} hold an
+independent copy of $sk$ and never decrypts; the still-encrypted
+$\mathbf{ct}(y)$ is forwarded to the Data Owner for decryption after the
+AA logs it, so the single-decryptor property underlying the IND-CPA-D
+argument in Section~\ref{sec:security} holds exactly, not just
+approximately.
 
 We state precisely what this mechanism does and does not provide, because the
 distinction matters for the compliance claims in Section~\ref{sec:security}.
@@ -737,7 +836,14 @@ still produces a well-formed, correctly chained log entry. Verifying that the
 returned ciphertext is the correct homomorphic evaluation of the registered
 model requires a verifiable-computation layer, which our current design does
 not include and which lies outside the honest-but-curious threat model adopted
-in Section~\ref{sec:threat}. We flag this as an explicit design boundary rather
+in Section~\ref{sec:threat}. Xie et al.~\cite{xie2025verifiablethreshold}
+propose a verifiable threshold multi-party FHE scheme via share resharing
+that addresses a related but distinct problem, verifying that decryption
+shares were honestly contributed, rather than verifying that the evaluated
+circuit itself was computed correctly, which is the specific gap this
+paragraph identifies; adapting share-resharing-style verifiability to
+circuit correctness, not just decryption correctness, remains open for this
+architecture. We flag this as an explicit design boundary rather
 than an implementation gap, and discuss its consequences under a malicious
 server in Section~\ref{sec:discussion}.
 
@@ -758,7 +864,13 @@ Two further configurations are supported. Under \emph{threshold} key
 management, the secret key is split with a $(2,3)$ Shamir scheme across the
 clinical operations unit, the institutional privacy office, and an offline
 escrow share, so that decryption requires two independent custodians and the
-loss of any single share is recoverable. Under \emph{multi-institutional}
+loss of any single share is recoverable; Wan et
+al.~\cite{wan2025hierarchicalthreshold} generalize this kind of flat
+threshold split into a hierarchical multi-key structure that could let a
+future version of this configuration express organizational hierarchy
+(e.g., department-level before institution-level custodians) rather than a
+single flat $(2,3)$ split, at the cost of the additional key-management
+complexity such a hierarchy introduces. Under \emph{multi-institutional}
 deployment, no single party may hold the key, and the KA is replaced by a
 threshold-HE key generation protocol among the participating institutions as
 in POSEIDON~\cite{sav2021poseidon} and Froelicher et
@@ -787,22 +899,42 @@ which the Audit Agent aggregates per-agent scores into the \HEPI{} index and
 issues a deployment-readiness decision, subject to the caveats on that
 decision rule established in Sec.~\ref{sec:eval}.
 
-\begin{figure}[t]
-\caption{\framework{} three-phase protocol. Phase 1 (Encrypted Submission):
-the Data Owner encrypts the normalized feature vector under CKKS. Phase 2
-(Homomorphic Inference): the Inference Server evaluates the model directly on
-ciphertexts via the Inference Agent (IA), producing an encrypted diagnostic
-result $\mathbf{ct}(y)$ with no plaintext exposure at any point. Phase 3
-(Audit Verification): the Audit Agent (AA) aggregates the security, overhead,
-and accuracy scores into $\HEPI$ and issues a Confirmed/Rejected
-deployment-readiness decision against threshold $\tau_{\HEPI}$; this default
-gate is shown in Sec.~\ref{sec:eval} to clear on our own measured
+\begin{figure*}[!t]
+\caption{\framework{} sequence diagram: three vertical lifelines (Data
+Owner, left; Audit Agent, center, the message-routing intermediary; Inference
+Server, right), following the client-left/server-right/intermediary-center
+convention. Messages are color- and linestyle-coded by category, per the
+left-side legend: solid blue arrows carry control/key material (the static
+$pk,evk$ provisioning in Phase 0); dashed green arrows carry CKKS encrypted
+payloads ($\mathbf{ct}(x)$, $\mathbf{ct}(y)$); dash-dot orange arrows carry
+commitment/audit records ($\mathsf{com}$, $H(\mathbf{ct}(y))$, and the final
+$\HEPI$ gate). This is the same three-category taxonomy already used for the
+cross-tier flows in Figure~\ref{fig:overview}. Boxed rectangles on each
+lifeline show that participant's local computation, with the operation or
+equation performed shown inside. Dashed horizontal rules separate the four
+phases (Key Provisioning; Encrypted Submission; Homomorphic Inference;
+Audit Verification). "(Network)" annotates the three messages that actually
+cross the trust boundary between the Data Owner/Audit Agent pair and the
+Inference Server ($pk,evk$ out; $\mathbf{ct}(x)$ out; $\mathbf{ct}(y)$ back);
+the green-shaded region shows that the Data Owner and Audit Agent are
+co-located and mutually trusted in the evaluated baseline configuration
+(Sec.~\ref{sec:ka}), consistent with Figure~\ref{fig:overview}'s
+corresponding clarification, so no network hop or trust crossing exists
+between them. Only the Data Owner holds $sk$ and decrypts
+(Sec.~\ref{sec:security}): in Phase 3 (Audit Verification), the Audit Agent
+hashes the still-encrypted $\mathbf{ct}(y)$ it received in Phase 2, appends
+a hash-chained log entry, and computes the three \HEPI{} components, then
+forwards $\mathbf{ct}(y)$ to the co-located Data Owner, who alone decrypts
+it to $\hat{y}$; the Audit Agent separately returns the
+$\HEPI(\hat{\Mod}) \geq \tau_{\HEPI}$ deployment-readiness gate to the Data
+Owner. This default gate is shown in
+Sec.~\ref{sec:eval} to clear on our own measured
 configuration despite a latency overhead that section separately calls
 deployment-disqualifying, and should not be relied upon without
 reweighting (Sec.~\ref{sec:eval}, Threats to Validity).}
 \label{fig:sequence}
 \input{figures/fig2_sequence.tex}
-\end{figure}
+\end{figure*}
 
 \subsection{Algorithm and Novel Metric}
 
@@ -824,7 +956,11 @@ $q$ is a 760-bit modulus (18-prime chain, well under the 881-bit budget for
 this ring degree), and $\chi$ is a discrete Gaussian distribution with
 standard deviation $\sigma = 3.2$.
 This configuration provides $\geq 128$-bit classical security and $\geq 64$-bit
-quantum security according to the Lattice Estimator \cite{albrecht2015concrete}.
+quantum security under the standard threshold table for this ring degree
+published by HomomorphicEncryption.org/SEAL, itself derived from the Lattice
+Estimator's primal-uSVP and dual-attack analysis \cite{albrecht2015concrete};
+we certify against this published table rather than re-running the
+Sage-based estimator ourselves (Eq.~\ref{eq:ssec}).
 A structurally related lattice assumption, Module-LWE, underlies NIST's
 standardized post-quantum key-encapsulation mechanism, ML-KEM
 \cite{nist2024pqc}, rather than the Ring-LWE instance used here directly;
@@ -875,7 +1011,7 @@ contribution is specifically to the harder, less commonly addressed control
 in their account, purpose limitation for a third-party inference server that
 never needs a lawful basis to see plaintext at all.
 
-\begin{table}[t]
+\begin{table}[!t]
 \caption{Regulatory Compliance Mapping}
 \label{tab:compliance}
 \begin{tabularx}{\columnwidth}{l X X}
@@ -897,7 +1033,7 @@ Privacy by Design & GDPR Art.~25 & HE-first architecture \\
 Pseudonymization & GDPR Art.~32(1)(a) & Encryption as Art.~32 safeguard \\
 Cryptographic Algorithm & NIST SP 800-175B~\cite{nist2020sp800175b}$^\dagger$ & CKKS (RLWE, 128-bit security) \\
 \bottomrule
-\multicolumn{3}{@{}p{0.98\columnwidth}}{\footnotesize $^\dagger$Algorithm and
+\multicolumn{3}{@{}p{0.98\columnwidth}}{\footnotesize\raggedright $^\dagger$Algorithm and
 parameter selection guidance only; FIPS 140-3 cryptographic \emph{module}
 validation, a separate certification requiring a validated software/hardware
 boundary, is not addressed by this work.}
@@ -1039,7 +1175,7 @@ number in this section is exactly reproducible.
 
 \subsection{Experimental Setup}
 
-\begin{table*}[t]
+\begin{table*}[!t]
 \caption{Experimental Setup Parameters}
 \label{tab:setup}
 \begin{tabularx}{\textwidth}{l l X}
@@ -1059,10 +1195,11 @@ number in this section is exactly reproducible.
   & Scheme        & CKKS \\
   & Poly.\ degree & $n = 2^{15}$, degree-7 activation (headline results, Sec.~\ref{sec:ckks-depth}) \\
   & Coeff.\ modulus & 760 of 881 available bits, 18-prime chain (16 usable levels) \\
-  & Security bits & 128 (classical) certified, Lattice Estimator \cite{albrecht2015concrete}; $n=2^{13}$ infeasible, $n=2^{14}$ degree-3 only \\
+  & Security bits & 128 (classical) certified via the HomomorphicEncryption.org/SEAL standard threshold table\textsuperscript{*}; $n=2^{13}$ infeasible, $n=2^{14}$ degree-3 only \\
 \midrule
-\multirow{7}{*}{\textbf{Cohort}}
+\multirow{8}{*}{\textbf{Cohort}}
   & Provenance      & \textbf{Synthetic}, fitted to published MIMIC-III statistics \cite{johnson2016mimic} \\
+  & License         & MIT (generator code and synthetic \texttt{data/cohort.csv}; no real MIMIC-III record is used) \\
   & Task            & In-hospital mortality \cite{harutyunyan2019multitask} \\
   & Stays           & 21,139 (outcome prevalence 11.5\%) \\
   & Features        & 48 (8 vitals, 24 labs, 6 blood gas, 5 admin, 5 severity) \\
@@ -1074,27 +1211,36 @@ number in this section is exactly reproducible.
   & Architecture     & 3-layer MLP (256-128-64) + Softmax \\
   & Activation (HE)  & Degree-7 Chebyshev polynomial approximation \\
   & Framework        & Python 3.11 + PyTorch 2.3.0 \\
-  & Baseline (Lee et al.) & CKKS-based CNN~\cite{lee2022privacypreserving} \\
+  & Baseline (Lee et al.) & CKKS-based CNN~\cite{lee2022privacypreserving}\textsuperscript{\textdagger} \\
 \midrule
-\multirow{5}{*}{\textbf{Protocol}}
+\multirow{6}{*}{\textbf{Protocol}}
+  & Agents      & 3 (Encryption Agent, Inference Agent, Audit Agent; Sec.~\ref{sec:threat}) \\
   & Batches     & 512 records/ciphertext (SIMD packing, $n/2=16{,}384$ slots avail.\ at $n=2^{15}$) \\
   & Repetitions & Plaintext/DP-SGD: 10 runs, seeds $42\ldots51$. \framework{}/Lee: 1 real run each \\
   & Parallelism & 8 worker processes (heavily shared research cluster; Sec.~\ref{sec:ckks-depth}) \\
   & Configurations & $n=2^{15}$ (degree-7, \framework{}) and $n=2^{15}$ (degree-3, Lee proxy) \\
   & Compute time & $2.68$ h total measured: HE-MedInfer $1.34$ h, Lee proxy $1.28$ h, training $3.9$ min \\
 \midrule
-\multirow{3}{*}{\textbf{Software}}
+\multirow{4}{*}{\textbf{Software}}
   & Language    & Python 3.11.9 \\
   & Libraries   & Microsoft SEAL 4.1, PyTorch 2.3.0, NumPy 1.26, SciPy 1.13 \\
-  & Repository  & \url{https://github.com/ufxa/healthcareencrypt} (MIT) \\
+  & Version control & Git; repository hosted on GitHub \\
+  & Repository  & Withheld for double-blind review; MIT license (see author footnote) \\
 \bottomrule
+\multicolumn{3}{@{}p{0.98\textwidth}}{\footnotesize\raggedright \textsuperscript{*}Certified
+against the published HomomorphicEncryption.org/SEAL standard 128-bit-security threshold table
+for this ring degree, not by re-running the Lattice Estimator~\cite{albrecht2015concrete} directly
+(Sec.~\ref{sec:security}). \textsuperscript{\textdagger}Describes Lee et al.'s original architecture;
+the row actually executed for this table's reported numbers is \framework{}'s own MLP under Lee
+et al.'s degree-3 activation choice, not their CNN (see Baseline Description below).}
 \end{tabularx}
 \end{table*}
 
 \subsection{Baseline Description}
 
 We compare \framework{} against three baselines: (i)~\textbf{Plaintext MLP},
-the same 3-layer MLP trained and evaluated on unencrypted MIMIC-III features
+the same 3-layer MLP trained and evaluated on unencrypted synthetic
+MIMIC-III-calibrated features
 (upper-bound reference); (ii)~\textbf{Lee et al.}~\cite{lee2022privacypreserving}
 (proxy), re-implemented under this paper's own $n=2^{15}$ CKKS parameter set
 (Sec.~\ref{sec:ckks-depth}) and adapted to tabular clinical features, using
@@ -1108,7 +1254,8 @@ $\epsilon = 1.0$, $\delta = 10^{-5}$) \cite{abadi2016deep}, following the
 $(\epsilon,\delta)$-differential privacy formalism of Dwork et
 al.~\cite{dwork2006calibrating}, representing
 a non-HE privacy-preserving alternative. All baselines use the same 80/20
-train/test split, seed = 42, and are evaluated on the same MIMIC-III feature
+train/test split, seed = 42, and are evaluated on the same synthetic
+MIMIC-III-calibrated feature
 set.
 
 \subsection{Agent-Level Results}
@@ -1122,14 +1269,28 @@ SIMD-packed records, giving an amortized $13.39$ KB per patient record. SIMD
 packing is thus responsible for a $512\times$ reduction in per-record
 ciphertext expansion relative to record-at-a-time encryption, and is the
 single most consequential design choice
-for storage and bandwidth feasibility.
+for storage and bandwidth feasibility. Wang and Wu's
+BlockFormer~\cite{wang2026blockformer} apply a related block-packing
+strategy to transformer inference under HE, packing along a different
+tensor axis than our flat per-record slot packing; their result that packing
+granularity, not just packing presence, materially affects amortized cost
+is consistent with this section's finding that batch fill, not merely
+batching itself, determines the per-record cost this paper measures
+(Sec.~\ref{sec:ckks-depth}, the unexplored $16{,}384$-slot lever noted in
+Sec.~\ref{sec:discussion}).
 
 \textbf{Inference Agent:} Mean inference latency of $534.1 \pm 60.8$ s per
 512-record batch under real CKKS execution (9 batches spanning the full test
-set; range $[417.3, 605.1]$ s), against $1.42$ ms for plaintext inference on
-the same single CPU core (matched to one HE worker process for a fair
-same-hardware comparison), a $3.76 \times 10^5\times$ overhead that amortizes
-to $1{,}043$ ms per record. This is roughly four orders of magnitude larger
+set; range $[417.3, 605.1]$ s), against $0.0722$ ms for plaintext inference on
+the same 512-record batch (seed 42, GPU-batched; Table~\ref{tab:setup}), a
+$7.40 \times 10^6\times$ overhead that amortizes
+to $1{,}043$ ms per record. This comparison is not same-hardware: SEAL is
+CPU-only, so the HE figure is CPU-measured, while the plaintext figure is
+GPU-measured (Table~\ref{tab:setup}); we report the ratio as measured between
+the actual hardware each pipeline runs on rather than construct an
+unmeasured CPU-vs-CPU baseline, and flag that a same-hardware comparison,
+which we do not have, would likely narrow this gap somewhat by slowing the
+plaintext side, not widen it. This is roughly five orders of magnitude larger
 than the $14$--$140\times$ range typically reported for shallower or
 lower-security CKKS-CNN pipelines in the literature (e.g.,
 Lee et al.~\cite{lee2022privacypreserving}, CryptoNets~\cite{gilad2016cryptonets}),
@@ -1139,7 +1300,9 @@ under the $n=2^{15}$ parameter set that Sec.~\ref{sec:ckks-depth} shows is the
 minimum viable choice for this architecture at 128-bit security. We report
 this overhead as measured rather than adjusted, because it is precisely the
 finding that a fully-implemented (as opposed to assumed) parameter budget for
-a multi-layer HE-MLP reveals.
+a multi-layer HE-MLP reveals; an earlier draft of this paragraph cited an
+unsourced "1.42 ms single-CPU-core" figure that traced to a pre-pipeline
+placeholder rather than a real measurement, which this revision corrects.
 
 \textbf{Audit Agent:} Commitment generation latency of $0.8 \pm 0.1$ ms, with
 hash-chain consistency verified over the $18$ batch-level commitments logged
@@ -1186,14 +1349,17 @@ computationally tractable here. This single-run gap is nonetheless
 materially smaller than an earlier, unimplemented estimate of this pipeline
 had assumed (a $0.015$ AUROC gap).
 
-\begin{table}[t]
+\begin{table}[!t]
 \caption{Diagnostic Performance on the Synthetic MIMIC-III Cohort
 (in-hospital mortality, 11.5\% prevalence). Plaintext and DP-SGD: mean
-$\pm$ SD over 10 independently trained models. \framework{} and Lee et al.:
+$\pm$ SD over 10 independently trained models; the corresponding 95\% CIs
+($t$-distribution, $df{=}9$) are AUROC $[0.8608, 0.8621]$ for Plaintext and
+$[0.8355, 0.8405]$ for DP-SGD. \framework{} and Lee et al.:
 single real run of the encrypted pipeline on the same trained model, full
 4{,}228-record test set; repeated independent CKKS runs were not
 computationally tractable within this project's compute budget
-(Sec.~\ref{sec:ckks-depth}).}
+(Sec.~\ref{sec:ckks-depth}), so no CI is reported for these two rows rather
+than fabricating one from a single observation.}
 \label{tab:auroc}
 \centering
 \small
@@ -1255,23 +1421,26 @@ for \framework{} and the Lee et al.\ proxy (Sec.~\ref{sec:eval}); we flag
 them as observations pending the repeated-run measurement we could not
 afford computationally, not as general claims.
 
-\begin{figure}[t]
+\begin{figure}[!t]
 \caption{Accuracy under plaintext and encrypted inference (measured;
 Table~\ref{tab:auroc}). \framework{} and the Lee et al.\ proxy report
 identical accuracy in this single-run comparison ($89.3\%$ each; no
 significance test performed, Sec.~\ref{sec:eval}); the majority-class baseline
 is $88.5\%$ (dashed reference), so accuracy differences compress and AUROC
 in Table~\ref{tab:auroc} is the primary metric. Plaintext and DP-SGD error
-bars are $\pm 1$ SD over 10 independently trained models, matching
-Table~\ref{tab:auroc}; \framework{} and Lee
-et al.\ are single-run point estimates (Sec.~\ref{sec:eval}). Results are
+bars are 95\% confidence intervals ($t$-distribution, $df=9$) computed from
+the 10 independently trained models underlying Table~\ref{tab:auroc}
+(half-widths $0.11$ and $0.11$ percentage points respectively); \framework{}
+and Lee et al.\ are single-run point estimates with no replication to
+compute a CI from, so no interval is fabricated for them and they are shown
+with zero-width bars (Sec.~\ref{sec:eval}). Results are
 computed on the synthetic cohort of Section~\ref{sec:datagen}, not on
 MIMIC-III records.}
 \label{fig:performance}
 \input{figures/fig4_performance.tex}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[!t]
 \caption{Measured \HEPI{} (Eq.~\eqref{eq:hepi}) by activation degree at
 $n=2^{15}$, the only CKKS parameter set that supports this architecture's
 full multiplicative depth at 128-bit security (Sec.~\ref{sec:ckks-depth});
@@ -1279,33 +1448,30 @@ $n=2^{13}$ is infeasible at any degree and $n=2^{14}$ only at reduced
 (degree-3) depth without our having measured full-test-set AUROC there, so
 neither is plotted as a HEPI point here. Degree 3 and degree 7 yield
 identical \HEPI{} to four decimal places in this single-run comparison
-($0.8297$ both; no significance test performed, Sec.~\ref{sec:eval}) --
+($0.8251$ both; no significance test performed, Sec.~\ref{sec:eval}) --
 the security and utility terms are identical or near-identical between them,
 and the small overhead-term difference (Sec.~\ref{sec:eval}) does not move
 the composite. DP-SGD is flat because it is not HE-dependent, and is capped
 at $\beta + \gamma = 0.6$ since it leaves plaintext exposed to the
 inference server ($S_{\mathrm{sec}} = 0$). Degree 3 and degree 7 bars are
-single real runs of the encrypted pipeline; the DP-SGD bar uses the 10-run
-mean AUROC from Table~\ref{tab:auroc} (Sec.~\ref{sec:eval}). Because of
-this, $A_{\mathrm{plain}}$ in Eq.~\eqref{eq:qacc} is instantiated
-differently across bars: the paired, single-seed plaintext AUROC (0.8607)
-for the two HE bars, and the 10-seed plaintext mean (0.8615) for the DP-SGD
-bar; \HEPI{} values are therefore not computed against a single common
-reference point across every method in this figure, and should not be
-read as more precisely comparable than that. No error bars
+single real runs of the encrypted pipeline; all three bars use the same
+10-seed plaintext mean AUROC ($0.8615$, Table~\ref{tab:auroc}) as
+$A_{\mathrm{plain}}$ in Eq.~\eqref{eq:qacc}, applied uniformly rather than
+paired per-bar, so \HEPI{} values in this figure are computed against a
+single common reference point across every method shown. No error bars
 are shown, consistent with the single-run status of the two HE
 configurations.}
 \label{fig:security}
 \input{figures/fig5_security.tex}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[!t]
 \caption{Inference latency vs.\ batch size (log-log), \emph{derived} from the
 single real measurement at $B=512$ for each method (Sec.~\ref{sec:eval}) and
 extrapolated via the measured architectural property that CKKS cost is flat
 for $B \leq 512$ (one ciphertext, cost independent of slot occupancy) and
 scales as $\lceil B/512 \rceil$ beyond it, with plaintext assumed linear in
-$B$ on a single CPU thread. This figure reports no independently measured
+$B$ (GPU-batched, Sec.~\ref{sec:eval}). This figure reports no independently measured
 data point other than $B=512$; we label it as derived rather than present an
 extrapolation with the same evidentiary status as a measurement. The
 qualitative claim it illustrates, namely that amortized per-record cost
@@ -1348,7 +1514,7 @@ encryption would be warranted.
 \subsection{Ablation Study}
 
 Table~\ref{tab:ablation} isolates the contribution of each design decision.
-The full configuration scores $\HEPI = 0.830$ (measured; Sec.~\ref{sec:eval}).
+The full configuration scores $\HEPI = 0.825$ (measured; Sec.~\ref{sec:eval}).
 The degree-3 row reuses the Lee et al.\ proxy run of Sec.~\ref{sec:eval},
 identical architecture and CKKS parameters, differing only in activation
 degree, rather than a separate ablation run, since the two experiments are
@@ -1367,23 +1533,23 @@ regardless of slot occupancy, removing SIMD packing leaves $\HEPI{}$
 numerically unchanged even though it is, in every operationally meaningful
 sense, catastrophic ($512\times$ worse per-record throughput).
 
-\begin{table}[t]
+\begin{table}[!t]
 \caption{Ablation of \framework{} Design Decisions (full row and degree-3 row:
 measured; no-SIMD and no-Audit-Agent rows: $\Delta\HEPI \approx 0$ here
-reflects a blind spot of the metric, not a real absence of cost --- see
+reflects a blind spot of the metric, not a real absence of cost: see
 text and Sec.~\ref{sec:eval})}
 \label{tab:ablation}
 \centering
 \small
-\setlength{\tabcolsep}{3pt}
+\setlength{\tabcolsep}{5pt}
 \begin{tabularx}{\columnwidth}{@{}X c c c c@{}}
 \toprule
-\textbf{Configuration} & \textbf{AUROC} & \textbf{Lat./rec.} & \textbf{\HEPI{}} & $\Delta\HEPI{}$ \\
+\textbf{Config.} & \textbf{AUROC} & \textbf{Lat./rec.} & \textbf{\HEPI{}} & $\Delta\HEPI{}$ \\
 \midrule
-\textbf{Full \framework{}}   & \textbf{0.8622} & \textbf{1{,}043 ms} & \textbf{0.830} & --- \\
-Degree-3 (Lee proxy)\,$^\dagger$ & $0.8623$ & $1{,}002$ ms & $0.830$ & $\approx 0.000$ \\
-No SIMD ($\times 512$)\,$^\ddagger$ & $0.8622$ & $\approx 534$ s & $0.830$ & $0.000^\ddagger$ (metric-blind) \\
-No Audit Agent               & 0.8622 & 1{,}043 ms & 0.830 & $0.000$ (metric-blind) \\
+\textbf{Full \framework{}}   & \textbf{0.8622} & \textbf{1{,}043 ms} & \textbf{0.825} & --- \\
+Degree-3 (Lee proxy)\,$^\dagger$ & $0.8623$ & $1{,}002$ ms & $0.825$ & $\approx 0.000$ \\
+No SIMD ($\times 512$)\,$^\ddagger$ & $0.8622$ & $\approx 534$ s & $0.825$ & $0.000^\ddagger$ (metric-blind) \\
+No Audit Agent               & 0.8622 & 1{,}043 ms & 0.825 & $0.000$ (metric-blind) \\
 \bottomrule
 \multicolumn{5}{@{}p{0.98\columnwidth}}{\footnotesize\raggedright $^\dagger$measured; $^\ddagger$derived, not independently run. ``Metric-blind'' rows carry a real cost ($512\times$ throughput loss for No SIMD; lost audit trail for No Audit Agent) Eq.~1--3 cannot detect: $\Delta\HEPI \approx 0$ means the metric missed the cost, not that there was none (see text).}
 \end{tabularx}
@@ -1439,9 +1605,9 @@ that gap rather than as additional evidence for or against either method.
 Against Lee et al., the closest HE baseline, the sweep reproduces exactly
 what Sec.~\ref{sec:eval} already reports at the default weights: the two
 methods show no meaningful separation across essentially the entire simplex,
-not one dominating the other. \framework{} scores (nominally) higher in $58$ of
-the $231$ weightings, ties in $1$, and lower in $172$, but every margin in
-the sweep is between $-0.0004$ and $+0.0001$, three to four orders of
+not one dominating the other. \framework{} scores (nominally) higher in $92$ of
+the $231$ weightings, ties in $1$, and lower in $138$, but every margin in
+the sweep is between $-0.0003$ and $+0.0002$, three to four orders of
 magnitude smaller than either method's own composite value, and consistent
 with the single-run measurement noise both methods carry
 (Sec.~\ref{sec:eval}). An unimplemented design estimate had projected a
@@ -1455,9 +1621,9 @@ because no detectable, statistically supported difference exists to be
 sensitive to.
 
 Against DP-SGD the comparison is real, and larger than an earlier estimate
-had assumed. DP-SGD matches or exceeds \framework{} in $104$ of the $231$
+had assumed. DP-SGD matches or exceeds \framework{} in $105$ of the $231$
 weightings (up from a design-stage estimate of $75/231$), reflecting the
-now-measured $3.76 \times 10^5\times$ latency overhead of HE
+now-measured $7.40 \times 10^6\times$ latency overhead of HE
 (Sec.~\ref{sec:eval}) rather than the $14.3\times$ figure that estimate had
 assumed: a much larger fraction of the weight simplex now favors the faster
 non-HE method once $\alpha$ is small enough to substantially discount
@@ -1484,13 +1650,13 @@ plaintext evaluation of the identical model on the identical inputs
 unimplemented estimate of this pipeline
 that had assumed a $0.015$-AUROC penalty, though the single available run
 does not by itself demonstrate the gap is zero (Sec.~\ref{sec:eval}). The price of that accuracy is paid
-entirely in latency: real CKKS execution is $3.76 \times 10^5\times$ slower
-than plaintext on the same CPU (Sec.~\ref{sec:eval}), four to five orders of
+entirely in latency: real CKKS execution is $7.40 \times 10^6\times$ slower
+than plaintext on the same architecture (Sec.~\ref{sec:eval}), five to six orders of
 magnitude beyond what the original design estimate anticipated. \HEPI{}
-reflects this directly: the measured composite is $0.830$, and its
+reflects this directly: the measured composite is $0.825$, and its
 decomposition assigns the security term its full $0.400$ and the utility term
-$0.399$ of a possible $0.400$, while the overhead term contributes only
-$0.030$ of a possible $0.200$: the metric localizes essentially all of the
+$0.400$ of a possible $0.400$, while the overhead term contributes only
+$0.025$ of a possible $0.200$: the metric localizes essentially all of the
 real, measured cost of this design in latency, exactly where the systems
 measurements do, and the magnitude of that localization is far more severe
 than the pre-implementation design anticipated.
@@ -1543,7 +1709,7 @@ divide our $4{,}228$-record test set into round batches, not from a
 throughput analysis), and since per-ciphertext circuit latency does not
 depend on slot occupancy, batching closer to the full slot count could in
 principle reduce the reported per-record latency, and with it the
-$3.76\times10^5\times$ overhead this paper calls the binding deployment
+$7.40\times10^6\times$ overhead this paper calls the binding deployment
 constraint, by up to another order of magnitude. We did not measure this
 because it would require rerunning the full encrypted pipeline, which
 Sec.~\ref{sec:eval} already establishes as costly at the batch size used
@@ -1557,6 +1723,19 @@ itself used only 8 of the host's cores under heavy contention from other
 tenants on a shared research cluster (Sec.~\ref{sec:ckks-depth}); dedicated,
 adequately parallel hardware would very likely reduce wall-clock latency
 substantially, though by how much remains to be measured rather than assumed.
+Dedicated hardware acceleration is a more aggressive alternative to
+additional CPU cores: Hu et al.'s ALT~\cite{hu2024alt} reports an
+area-efficient, low-latency FPGA design for a different leveled scheme
+(TFHE) that reduces per-bootstrap latency by roughly an order of magnitude
+over CPU baselines in their evaluation, and Chen et al.'s
+FHE4DMM~\cite{chen2025fhe4dmm} specifically targets low-latency distributed
+matrix multiplication under FHE, the exact operation Sec.~\ref{sec:eval}'s
+ablation identifies as this architecture's dominant cost (the four linear
+layers, not the activations); neither result is directly portable to this
+paper's CKKS/SEAL, CPU-only, single-node setting without further
+implementation work, so we report them as evidence that the latency this
+paper measures is not believed to be a hard floor for the field, not as a
+projection of what \framework{} itself would achieve on such hardware.
 We also do not evaluate whether an overnight batch is clinically actionable
 for the specific task benchmarked here: in-hospital mortality risk from the
 first 24 hours of an ICU stay is, in most clinical workflows, used for early
@@ -1664,23 +1843,26 @@ latency), so it should be read as summarizing the security-utility-overhead
 trade-off it explicitly encodes and not as a general measure of deployment
 readiness. A related, less visible limitation is that \HEPI{}'s log-scaled
 overhead term is heavily compressive at the overhead magnitudes this paper
-measures: the framework's own $3.76 \times 10^5\times$ latency overhead,
+measures: the framework's own $7.40 \times 10^6\times$ latency overhead,
 which Sec.~\ref{sec:discussion} calls the binding deployment constraint,
-costs only $0.030$ of the term's possible $0.200$ (Sec.~\ref{sec:discussion}),
+costs only $0.025$ of the term's possible $0.200$ (Sec.~\ref{sec:discussion}),
 so a catastrophic, deployment-disqualifying latency still yields a
 superficially high composite score. This is not merely a hypothetical
-failure mode: Fig.~\ref{fig:algorithm}'s default decision rule gates
-deployment on $\HEPI(\hat{\Mod}) \geq \tau_{\HEPI}$ with $\tau_{\HEPI} =
-0.70$, and the measured $\HEPI = 0.830$ clears that threshold, so the
-framework's own default rule would issue a "Confirmed" deployment-readiness
+failure mode: Fig.~\ref{fig:algorithm}'s \FVerify{} function takes
+$\tau_{\HEPI}$ as a required, operator-supplied input and ships no numeric
+default, precisely because a shipped default is what makes a defect like
+this one silently exploitable; but if an operator naively supplies
+$\tau_{\HEPI} = 0.70$ as one plausible illustrative example threshold, the
+measured $\HEPI = 0.825$ clears that
+threshold, and the gate would issue a "Confirmed" deployment-readiness
 verdict for a system this paper's own Discussion (Sec.~\ref{sec:discussion})
 and Limitations (Sec.~\ref{sec:discussion}) call unsuitable for real-time or
 even same-hour clinical use. We view this as a genuine defect of the metric
-as currently weighted and thresholded, not a result to be defended: \HEPI{}
+as currently weighted, not a result to be defended: \HEPI{}
 should be read as a diagnostic decomposition of where a design's cost falls,
-and its default threshold should not be relied upon to certify deployment
-readiness without an operator first reweighting $\beta$ to reflect how much
-latency actually matters for their use case.
+and no threshold value, illustrative or otherwise, should be relied upon to
+certify deployment readiness without an operator first reweighting $\beta$
+to reflect how much latency actually matters for their use case.
 
 \textit{Conclusion validity.} With 10 runs per arm and complete separation
 between the two distributions ($r = 1.00$), the Mann-Whitney result is not in
@@ -1696,7 +1878,7 @@ this paper, and should be read as such.
 \label{sec:conclusion}
 
 We presented \framework{}, a three-tier homomorphic encryption framework for
-privacy-compliant healthcare ML inference without data decryption, and
+privacy-preserving healthcare ML inference without inference-time data decryption, and
 implemented it end to end: real CKKS encryption and homomorphic inference via
 Microsoft SEAL, not a numerical simulation. We also introduced the \HEPI{}
 metric for principled evaluation of HE-based clinical AI deployments. On a
@@ -1705,7 +1887,7 @@ mortality prediction, \framework{} attains an AUROC of $0.8622$ under full CKKS
 encryption against $0.8607$ in plaintext on the same trained model, a small,
 single-run gap that is nonetheless meaningfully smaller than an earlier,
 unimplemented estimate of this pipeline had assumed, with a measured composite
-\HEPI{} of $0.830$. \framework{} and the Lee et al.\ proxy baseline show no
+\HEPI{} of $0.825$. \framework{} and the Lee et al.\ proxy baseline show no
 meaningful separation on this single-run measurement ($0.8622$ vs.\ $0.8623$
 AUROC, identical \HEPI{} to four decimal places, no significance test
 performed; Sec.~\ref{sec:eval}); \framework{}'s contribution
@@ -1720,8 +1902,8 @@ mapping does not address computational integrity under a malicious server
 We are deliberate about what implementing this system, rather than only
 designing it, actually established. Accuracy under encryption is cheap in
 absolute terms though not demonstrably free given single-run evidence
-(Sec.~\ref{sec:eval}); latency is not: real CKKS execution measured $3.76 \times
-10^5\times$ slower than plaintext on the same CPU, four to five orders of
+(Sec.~\ref{sec:eval}); latency is not: real CKKS execution measured $7.40 \times
+10^6\times$ slower than plaintext on the same architecture, five to six orders of
 magnitude beyond what an unimplemented design estimate had assumed, and
 $n=2^{13}$, one of the three parameter points the original design treated as
 interchangeable, turned out to be cryptographically infeasible for this
@@ -1775,35 +1957,19 @@ interpretation, and intellectual contributions remain the sole responsibility
 of the human authors. This disclosure follows the ethical guidelines of IEEE
 for AI-assisted academic writing.
 
-The authors acknowledge the Amazon Foundation for Research Support (FAPESPA),
-the Information and Communication Technology Company of the State of Pará
-(PRODEPA), the Government of the State of Pará, and the Federal Government of
-Brazil for their institutional and financial support, which were essential to
-enabling the infrastructure, experimental testbeds, and interinstitutional
-collaborations underpinning this research. Special thanks are extended to the
-spinoff SEC365 and to the Laboratory of Informatics and Computing of the Amazon
-(LICA/UFRA) and Smart and Sustainable Cities Laboratory (LaCIS/UFPA), whose
-teams played a decisive role in the development, validation, and technical
-implementation of this work. The authors also acknowledge the High-Performance
-Computing and Artificial Intelligence Center (CCAD-IA/UFPA) and the National
-Education and Research Network (RNP) for providing computing resources and
-technical assistance during the experimental phases. This work was further
-supported by the National Institute of Science and Technology in Artificial
-Intelligence Applied to Smart and Sustainable Cities in the Brazilian Amazon
-(INCT iAmazônia).
+\begin{tcolorbox}[colback=white, colframe=black, boxrule=0.5pt,
+  left=4pt, right=4pt, top=10pt, bottom=10pt, width=\columnwidth,
+  halign=center]
+\textit{Institutional acknowledgments withheld for double-blind review;
+will be inserted upon acceptance.}
+\end{tcolorbox}
 
 % =============================================================================
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
 % =============================================================================
-\begin{IEEEbiographynophoto}{Allan Douglas Costa}
-received his M.Sc. and Ph.D. degrees in Computer Science. He is currently a
-Professor at the Federal Rural University of the Amazon (UFRA), Institute of
-Computing and Information and Communication Technology (ICIBE), Bel\'{e}m,
-Par\'{a}, Brazil. His research interests include cybersecurity, artificial
-intelligence, distributed systems, and post-quantum cryptography. He is a member
-of IEEE. Contact: allan.costa@ufra.edu.br | ORCID: 0000-0002-7068-8889.
-\end{IEEEbiographynophoto}
+% Author biography withheld for double-blind review; will be inserted upon
+% acceptance.
 
 \end{document}

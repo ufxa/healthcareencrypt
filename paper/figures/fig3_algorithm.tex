@@ -13,19 +13,27 @@
   introduced in this paper. Complexity: encryption $O(d\log n)$; inference
   $O(d\cdot L\cdot n\log n)$; audit $O(1)$. This pseudocode describes the
   general algorithm; Section~\ref{sec:eval} reports real, executed CKKS
-  measurements against it, not a simulation. The final return statement's
-  $\HEPI(\hat{\Mod}) \geq \tau_{\HEPI}$ gate at the shown default
-  ($\tau_{\HEPI}=0.70$) clears on our own measured configuration despite a
-  latency overhead Sec.~\ref{sec:discussion} calls deployment-disqualifying;
-  see Sec.~\ref{sec:eval} (Threats to Validity) before relying on this
-  default.}
+  measurements against it, not a simulation. The deployment gate
+  $\HEPI(\hat{\Mod}) \geq \tau_{\HEPI}$ takes $\tau_{\HEPI}$ as a
+  \textbf{required, operator-supplied input}: the algorithm ships no numeric
+  default and therefore cannot silently certify a deployment.
+  Sec.~\ref{sec:discussion} discusses $\tau_{\HEPI}=0.70$ purely as one
+  illustrative example value, under which this paper's own measured
+  configuration would clear the gate despite a latency overhead the same
+  section calls deployment-disqualifying; see Sec.~\ref{sec:eval} (Threats to
+  Validity) and Sec.~\ref{sec:discussion} before choosing any operational
+  threshold.}
 \label{fig:algorithm}
 
 \Input{Clinical feature vector $x \in \mathbb{R}^d$; CKKS keys $(pk, sk, evk)$;
        model weights $\{W_l, b_l\}_{l=1}^{L}$; plaintext accuracy
        $A_{\text{plain}}$ and latency $L_{\text{plain}}$; $\HEPI$ weights
-       $\alpha, \beta, \gamma$ with $\alpha+\beta+\gamma=1$}
-\Output{Diagnostic prediction $\hat{y}$; privacy index $\HEPI(\hat{\Mod}) \in [0,1]$}
+       $\alpha, \beta, \gamma$ with $\alpha+\beta+\gamma=1$;
+       deployment-gate threshold $\tau_{\HEPI} \in [0,1]$, \textbf{operator-supplied,
+       no default shipped by this algorithm} (see caption)}
+\Output{Diagnostic prediction $\hat{y}$; deployment gate
+       $\HEPI(\hat{\Mod}) \geq \tau_{\HEPI} \in \{\mathrm{true}, \mathrm{false}\}$,
+       evaluated only against the caller-supplied $\tau_{\HEPI}$}
 
 \BlankLine
 \tcp{\textbf{Phase 1: Encrypted Submission (Encryption Agent, EA)}}
@@ -54,13 +62,15 @@ $\mathbf{ct}(y) \leftarrow \mathbf{h}$
 \BlankLine
 \hrulefill\;
 \BlankLine
-\tcp{\textbf{Phase 3: Audit Verification (Audit Agent, AA)}}
+\tcp{\textbf{Phase 3: Audit Verification (Audit Agent, AA / Data Owner, DO co-located)}}
 \SetKwFunction{FVerify}{Verify}
 \SetKwProg{Fn}{Function}{:}{}
-\Fn{\FVerify{$\mathbf{ct}(y),\, sk,\, \mathsf{com}$}}{
-  \tcp{Decrypt and score at the trusted Data Owner / Audit Agent}
-  $\hat{y} \leftarrow \mathsf{Dec}_{sk}(\mathbf{ct}(y))$\;
-  $\textsc{AuditLog.Append}(\mathsf{com},\, H(\mathbf{ct}(y)))$\;
+\Fn{\FVerify{$\mathbf{ct}(y),\, sk,\, \mathsf{com},\, \tau_{\HEPI}$}}{
+  \tcp{AA hashes/logs the still-encrypted result; only DO uses $sk$ to decrypt, after logging}
+  $\textsc{AuditLog.Append}(\mathsf{com},\, H(\mathbf{ct}(y)))$
+    \Comment{AA; no $sk$ needed}\;
+  $\hat{y} \leftarrow \mathsf{Dec}_{sk}(\mathbf{ct}(y))$
+    \Comment{DO only}\;
 
   \tcp{Security: bits of classical security of the RLWE parameter set}
   $\lambda \leftarrow \textsc{LatticeEstimator}(n, q, \chi)$
@@ -93,7 +103,9 @@ $\mathbf{ct}(y) \leftarrow \mathbf{h}$
   \end{tcolorbox}
 
   \Return $\hat{y},\; \HEPI(\hat{\Mod}) \geq \tau_{\HEPI}$
-    \Comment{default $\tau_{\HEPI} = 0.70$}\;
+    \Comment{$\tau_{\HEPI}$ is the caller-supplied input above; this function
+    ships \textbf{no} numeric default and cannot certify without one being
+    explicitly provided (Sec.~\ref{sec:eval}, Threats to Validity)}\;
 }
 
 \BlankLine

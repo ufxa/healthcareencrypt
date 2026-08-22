@@ -1,4 +1,4 @@
-% Figure 1 — HE-MedInfer Architecture Overview
+% Figure 1 -- HE-MedInfer Architecture Overview
 \begin{tikzpicture}[
   box/.style={draw, rounded corners=3pt, minimum width=2.2cm, minimum height=0.8cm,
               align=center, font=\small},
@@ -8,10 +8,15 @@
   aarr/.style={-{Stealth[length=5pt]}, thick, orange!80!black, dash dot},
 ]
 
-% --- Data Owner Tier ---
-\node[box, fill=blue!10]  (do)    at (0, 0)    {Data Owner\\(Hospital)};
-\node[box, fill=blue!15]  (ea)    at (0,-1.6)  {Encryption\\Agent (EA)};
-\node[box, fill=gray!10]  (feat)  at (0,-3.0)  {Feature\\Normalization};
+% --- Data Owner Tier (Key Authority is drawn INSIDE this tier, not as a
+%     separate box, because the baseline configuration this paper evaluates
+%     co-locates KA inside the Data Owner's own trust boundary, Sec.~4.6 --
+%     the diagram's visual grammar must match that claim, not just the
+%     caption text) ---
+\node[box, fill=blue!10]   (do)    at (-0.9, 0)   {Data Owner\\(Hospital)};
+\node[box, fill=orange!10, minimum width=2.0cm] (ka) at (1.3, 0) {Key Authority\\(KA)};
+\node[box, fill=blue!15]   (ea)    at (0,-1.6)  {Encryption\\Agent (EA)};
+\node[box, fill=gray!10]   (feat)  at (0,-3.0)  {Feature\\Normalization};
 
 % --- Inference Server Tier ---
 \node[box, fill=green!10] (is)    at (4.5, 0)  {Inference\\Server};
@@ -19,17 +24,16 @@
 \node[box, fill=gray!10]  (poly)  at (4.5,-3.0){Polynomial\\Activation};
 
 % --- Audit Tier ---
-\node[box, fill=orange!10](ka)    at (9.0, 0)  {Key Authority\\(KA)};
 \node[box, fill=orange!15](aa)    at (9.0,-1.6){Audit\\Agent (AA)};
 \node[box, fill=gray!10]  (log)   at (9.0,-3.0){Append-Only\\Audit Log};
 
 % --- Tier labels ---
 \begin{scope}[on background layer]
-  \node[tier, fit=(do)(ea)(feat), label=above:{\small \textbf{Encryption Tier (Data Owner)}}] {};
+  \node[tier, fit=(do)(ka)(ea)(feat), label=above:{\small \textbf{Encryption Tier (DO + KA)}}] {};
   \node[tier, fit=(is)(ia)(poly), fill=green!3,
         label=above:{\small \textbf{Inference Tier (Cloud)}}] {};
-  \node[tier, fit=(ka)(aa)(log),  fill=orange!3,
-        label=above:{\small \textbf{Audit Tier (KA)}}] {};
+  \node[tier, fit=(aa)(log),  fill=orange!3,
+        label=above:{\small \textbf{Audit Tier (AA)}}] {};
 \end{scope}
 
 % --- Internal flows ---
@@ -37,17 +41,18 @@
 \draw[arr] (ea)   -- (feat);
 \draw[arr] (is)   -- (ia);
 \draw[arr] (ia)   -- (poly);
-\draw[arr] (ka)   -- (aa);
 \draw[arr] (aa)   -- (log);
 
-% --- Cross-tier encrypted flows ---
-\draw[earr] (ea)  -- node[above, font=\scriptsize]{ct(x)} (ia);
-\draw[earr] (ia)  -- node[above, font=\scriptsize]{ct(y)} (ea);
+% --- Cross-tier encrypted flows (routed above the agent-box row so
+%     arrowheads/labels never cross the IA node text) ---
+\draw[earr] (ea)  to[bend left=15] node[above, font=\scriptsize, pos=0.5]{ct(x)} (ia);
+\draw[earr] (ia)  to[bend left=15] node[below, font=\scriptsize, pos=0.5]{ct(y)} (ea);
 
-% --- Audit flows ---
-\draw[aarr] (ea)  -- node[above, font=\scriptsize, sloped]{com} (aa);
+% --- Audit flows (com/pk/evk routed above the row; ct(y)-to-AA leaves
+%     from IA's own edge so it never re-crosses IA) ---
+\draw[aarr] (ea)  to[bend left=30] node[above, font=\scriptsize, sloped, pos=0.35]{com} (aa);
 \draw[aarr] (ia)  -- node[above, font=\scriptsize, sloped]{ct(y)} (aa);
-\draw[arr]  (ka)  -- node[above, font=\scriptsize, sloped]{pk, evk} (ia);
+\draw[arr]  (ka)  to[bend right=25] node[above, font=\scriptsize, sloped, pos=0.68]{pk, evk} (ia);
 
 % --- Legend ---
 \matrix[draw, inner sep=4pt, below=0.4cm of feat, xshift=4.5cm,
